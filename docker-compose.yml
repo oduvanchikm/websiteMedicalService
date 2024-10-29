@@ -1,0 +1,6 @@
+﻿services:
+  courseworkdatabase:
+    image: courseworkdatabase
+    build:
+      context: .
+      dockerfile: CourseWorkDataBase/Dockerfile
