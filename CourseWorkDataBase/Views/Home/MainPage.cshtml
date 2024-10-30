@@ -1,106 +1,98 @@
-@* @model Appointment *@
+@using CourseWorkDataBase.Models
+@model IEnumerable<DoctorViewModel>
+
 @{
-    ViewData["Title"] = "Запись на прием";
+    ViewData["Title"] = "Главная";
 }
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8" />
-    <title>@ViewData["Title"] - Запись на прием к врачу</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Подключение Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-</head>
-<body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Запись на прием к врачу</h1>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                @TempData["SuccessMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-            </div>
-        }
+<div class="container mt-5">
+    <h1 class="mb-4">Список врачей</h1>
 
-        <form asp-action="Index" method="post" class="needs-validation" novalidate>
-            <div class="row g-3">
-                <!-- Имя пациента -->
-                <div class="col-md-6">
-                    <label asp-for="PatientName" class="form-label"></label>
-                    <input asp-for="PatientName" class="form-control" />
-                    <span asp-validation-for="PatientName" class="text-danger"></span>
+    @if (Model == null)
+    {
+        <div class="alert alert-danger">Данные не загружены.</div>
+    }
+    else if (!Model.Any())
+    {
+        <p>Нет доступных врачей.</p>
+    }
+    else
+    {
+        <div class="accordion" id="doctorsAccordion">
+            @foreach (var doctor in Model)
+            {
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading@doctor.DoctorId">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse@doctor.DoctorId" aria-expanded="false" aria-controls="collapse@doctor.DoctorId">
+                            Dr. @doctor.DoctorName @doctor.DoctorFamilyName - @doctor.Specialty
+                        </button>
+                    </h2>
+                    <div id="collapse@doctor.DoctorId" class="accordion-collapse collapse" aria-labelledby="heading@doctor.DoctorId" data-bs-parent="#doctorsAccordion">
+                        <div class="accordion-body">
+                            <h5>Предстоящие приемы:</h5>
+                            @if (doctor.Appointments != null && doctor.Appointments.Any())
+                            {
+                                <table class="table table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>Дата и время</th>
+                                        <th>Пациент</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach (var appointment in doctor.Appointments.OrderBy(a => a.AppointmentDate))
+                                    {
+                                        <tr>
+                                            <td>@appointment.AppointmentDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                            <td>@appointment.PatientName</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#appointmentModal@appointment.AppointmentDate.Ticks">
+                                                    Подробнее
+                                                </button>
+                                                <!-- Модальное окно для подробностей -->
+                                                <div class="modal fade" id="appointmentModal@appointment.AppointmentDate.Ticks" tabindex="-1" aria-labelledby="appointmentModalLabel@appointment.AppointmentDate.Ticks" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="appointmentModalLabel@appointment.AppointmentDate.Ticks">Детали приёма</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>
+                                                                    <strong>Дата и время:</strong> @appointment.AppointmentDate.ToString("dd.MM.yyyy HH:mm")
+                                                                </p>
+                                                                <p>
+                                                                    <strong>Пациент:</strong> @appointment.PatientName
+                                                                </p>
+                                                                <!-- Добавьте другие детали по необходимости -->
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                                                                <!-- Добавьте другие действия по необходимости -->
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                    </tbody>
+                                </table>
+                            }
+                            else
+                            {
+                                <p>Нет предстоящих приемов.</p>
+                            }
+                        </div>
+                    </div>
                 </div>
+            }
+        </div>
+    }
+</div>
 
-                <!-- Электронная почта -->
-                <div class="col-md-6">
-                    <label asp-for="Email" class="form-label"></label>
-                    <input asp-for="Email" type="email" class="form-control" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                </div>
-
-                <!-- Телефон -->
-                <div class="col-md-6">
-                    <label asp-for="Phone" class="form-label"></label>
-                    <input asp-for="Phone" type="tel" class="form-control" />
-                    <span asp-validation-for="Phone" class="text-danger"></span>
-                </div>
-
-                <!-- Выбор врача -->
-                <div class="col-md-6">
-                    <label asp-for="DoctorId" class="form-label">Выберите врача</label>
-                    <select asp-for="DoctorId" class="form-select" asp-items="ViewBag.Doctors">
-                        <option value="">-- Выберите врача --</option>
-                    </select>
-                    <span asp-validation-for="DoctorId" class="text-danger"></span>
-                </div>
-
-                <!-- Дата приема -->
-                <div class="col-md-6">
-                    <label asp-for="AppointmentDate" class="form-label"></label>
-                    <input asp-for="AppointmentDate" type="date" class="form-control" />
-                    <span asp-validation-for="AppointmentDate" class="text-danger"></span>
-                </div>
-
-                <!-- Время приема -->
-                <div class="col-md-6">
-                    <label asp-for="AppointmentTime" class="form-label"></label>
-                    <input asp-for="AppointmentTime" type="time" class="form-control" />
-                    <span asp-validation-for="AppointmentTime" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">Записаться</button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Подключение Bootstrap JS и зависимостей -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Подключение jQuery (необязательно, если вы используете только Bootstrap) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Включение валидации на стороне клиента -->
-    <script>
-        // Пример простой валидации с использованием Bootstrap
-        (function () {
-            'use strict'
-
-            var forms = document.querySelectorAll('.needs-validation')
-
-            Array.prototype.slice.call(forms)
-                .forEach(function (form) {
-                    form.addEventListener('submit', function (event) {
-                        if (!form.checkValidity()) {
-                            event.preventDefault()
-                            event.stopPropagation()
-                        }
-
-                        form.classList.add('was-validated')
-                    }, false)
-                })
-        })()
-    </script>
-</body>
-</html>
+<!-- Подключение Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

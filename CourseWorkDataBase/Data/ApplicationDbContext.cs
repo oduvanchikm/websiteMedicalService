@@ -10,25 +10,44 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    public DbSet<Users> User { get; set; }
-    public DbSet<Roles> Role { get; set; }
+    public DbSet<Users> Users { get; set; }
+    public DbSet<Roles> Roles { get; set; }
+    public DbSet<Doctors> Doctors { get; set; }
+    public DbSet<Specialties> Specialties { get; set; }
+    public DbSet<Appointments> Appointments { get; set; }
     
-    // protected override void OnModelCreating(ModelBuilder modelBuilder)
-    // {
-    //     base.OnModelCreating(modelBuilder);
-    //     
-    //     modelBuilder.Entity<Users>()
-    //         .HasOne(u => u.Role)
-    //         .WithMany(r => r.Users)
-    //         .HasForeignKey(u => u.Role)
-    //         .OnDelete(DeleteBehavior.Restrict); 
-    // }
-    //
-    // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    // {
-    //     if (!optionsBuilder.IsConfigured)
-    //     {
-    //         optionsBuilder.UseNpgsql("YourConnectionStringHere");
-    //     }
-    // }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Настройка связей и ограничений
+
+        // Врач -> Специальность (многие к одному)
+        modelBuilder.Entity<Doctors>()
+            .HasOne(d => d.Specialty)
+            .WithMany(s => s.Doctors)
+            .HasForeignKey(d => d.SpecialtyID)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Прием -> Врач (многие к одному)
+        modelBuilder.Entity<Appointments>()
+            .HasOne(a => a.Doctor)
+            .WithMany(d => d.Appointments)
+            .HasForeignKey(a => a.DoctorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Прием -> Пользователь (многие к одному)
+        modelBuilder.Entity<Appointments>()
+            .HasOne(a => a.User)
+            .WithMany(u => u.Appointments)
+            .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Пользователь -> Роль (многие к одному)
+        modelBuilder.Entity<Users>()
+            .HasOne(u => u.Role)
+            .WithMany(r => r.Users)
+            .HasForeignKey(u => u.RoleId)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
 }

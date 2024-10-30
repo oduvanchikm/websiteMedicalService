@@ -1,18 +1,12 @@
-namespace CourseWorkDataBase.Data;
-
+using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.Models;
+
+namespace CourseWorkDataBase.Data;
 
 public static class DbInitializer
 {
-    public static void Initialize(ApplicationDbContext context)
+    public static async Task InitializeAsync(ApplicationDbContext context)
     {
-        context.Database.EnsureCreated();
-
-        if (context.User.Any())
-        {
-            return;
-        }
-
-        context.SaveChanges();
+        await context.Database.MigrateAsync();
     }
 }
