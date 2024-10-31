@@ -23,6 +23,14 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
+// builder.WebHost.ConfigureKestrel(serverOptions =>
+// {
+//     serverOptions.ListenAnyIP(7241, listenOptions =>
+//     {
+//         listenOptions.UseHttps();
+//     });
+// });
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -38,7 +46,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -46,9 +54,15 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Дополнительный маршрут (по желанию)
 app.MapControllerRoute(
     name: "default",
-    // pattern: "{controller=Patient}/{action=PatientPage}/{id?}");
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Определение маршрутов
+app.MapControllerRoute(
+    name: "patient",
+    pattern: "{controller=Patient}/{action=PatientPage}/{id?}");
+
 
 app.Run();

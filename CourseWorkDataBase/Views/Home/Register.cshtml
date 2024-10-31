@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="~/css/index.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Общие стили */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -138,6 +137,14 @@
             color: #593f9d;
         }
 
+        .additional-options {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
         /* Социальные кнопки регистрации */
         .social-btn {
             background-color: #4267B2; /* Цвет Facebook */
@@ -180,24 +187,20 @@
     <h2>Регистрация</h2>
     <form action="/register" method="POST">
         <div class="form-group">
-            <label for="username">Имя пользователя</label>
-            <input type="text" id="username" name="username" placeholder="Введите ваше имя" required>
+            <label for="Name">Имя пользователя</label>
+            <input type="text" id="Name" name="Name" placeholder="Введите ваше имя" required>
         </div>
         <div class="form-group">
-            <label for="familyname">Фамилия пользователя</label>
-            <input type="text" id="familyname" name="familyname" placeholder="Введите вашу фамилию" required>
+            <label for="FamilyName">Фамилия пользователя</label>
+            <input type="text" id="FamilyName" name="FamilyName" placeholder="Введите вашу фамилию" required>
         </div>
         <div class="form-group">
-            <label for="email">Электронная почта</label>
-            <input type="email" id="email" name="email" placeholder="example@domain.com" required>
+            <label for="Email">Электронная почта</label>
+            <input type="email" id="Email" name="Email" placeholder="example@domain.com" required>
         </div>
         <div class="form-group">
-            <label for="password">Придумайте пароль</label>
-            <input type="password" id="password" name="password" placeholder="Создайте пароль" required>
-        </div>
-        <div class="form-group">
-            <label for="confirm_password">Пожалуйста, повторите пароль</label>
-            <input type="password" id="confirm_password" name="confirm_password" placeholder="Повторите пароль" required>
+            <label for="Password">Придумайте пароль</label>
+            <input type="password" id="Password" name="Password" placeholder="Создайте пароль" required>
         </div>
         <button type="submit" class="btn btn-primary">
             <i class="fas fa-user-plus icon"></i> Зарегистрироваться
@@ -205,46 +208,8 @@
     </form>
     <div class="additional-options">
         <span>Уже есть аккаунт?</span>
-        <a href="/login">Войти</a>
-    </div>
-    <div class="social-login" style="margin-top: 20px;">
-        <p>Или зарегистрируйтесь с помощью:</p>
-        <div style="display: flex; justify-content: center; margin-top: 10px;">
-            <button class="social-btn google"><i class="fab fa-google"></i></button>
-            <button class="social-btn facebook"><i class="fab fa-facebook-f"></i></button>
-            <button class="social-btn twitter"><i class="fab fa-twitter"></i></button>
-        </div>
+        <a href="@Url.Action("Login", "Home")">Войти</a>
     </div>
 </div>
-
-<script>
-    document.getElementById('registerForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-
-        const data = {
-            username: document.getElementById('username').value,
-            familyname: document.getElementById('familyname').value, 
-            email: document.getElementById('email').value,
-            password: document.getElementById('password').value,
-            role: { Name: "Patient" }
-        };
-
-        const response = await fetch('/api/AuthorizationApi/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-
-        if (response.ok) {
-            alert('Регистрация прошла успешно');
-        } else {
-            const error = await response.text();
-            alert('Ошибка: ' + error);
-        }
-    });
-</script>
-
 </body>
 </html>

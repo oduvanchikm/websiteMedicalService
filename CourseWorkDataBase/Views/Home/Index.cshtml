@@ -19,7 +19,7 @@ ViewData["Title"] = "Добро пожаловать";
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(
-                rgba(0, 0, 0, 0.5), 
+                rgba(0, 0, 0, 0.5),
                 rgba(0, 0, 0, 0.5)
             ), url('https://amcmedlife.ru/wp-content/uploads/revslider/demo-medical/slide-medical-2.jpg') no-repeat center center fixed;
             background-size: cover;
@@ -62,13 +62,13 @@ ViewData["Title"] = "Добро пожаловать";
             transform: translateX(-50%);
             border-radius: 2px;
         }
-        
+
         .welcome-container p {
             margin-bottom: 35px;
             font-size: 18px;
             color: #555;
         }
-        
+
         .button-group {
             display: flex;
             justify-content: center;
@@ -95,7 +95,7 @@ ViewData["Title"] = "Добро пожаловать";
         }
 
         .btn-secondary {
-            background-color: #5a6268; 
+            background-color: #5a6268;
         }
 
         .btn-primary:hover {
@@ -105,24 +105,17 @@ ViewData["Title"] = "Добро пожаловать";
         }
 
         .btn-secondary:hover {
-            background-color: #545b62; 
+            background-color: #545b62;
             transform: scale(1.05);
             box-shadow: 0 4px 15px rgba(84, 91, 98, 0.3);
         }
-        
+
         .icon {
             margin-right: 8px;
         }
-        
-        .additional-options {
-            margin-top: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
 
-        .additional-options a {            color: #6f42c1;
+        .additional-options a {
+            color: #6f42c1;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
@@ -132,52 +125,11 @@ ViewData["Title"] = "Добро пожаловать";
         .additional-options a:hover {
             color: #593f9d;
         }
-        
-        .social-login {
-            margin-top: 30px;
-        }
 
         .social-login p {
             margin-bottom: 10px;
             font-size: 16px;
             color: #333;
-        }
-
-        .social-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .social-btn {
-            background-color: #4267B2; /* Facebook */
-            color: #fff;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 50%;
-            font-size: 18px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.3s;
-        }
-
-        .social-btn.google {
-            background-color: #DB4437;
-        }
-
-        .social-btn.twitter {
-            background-color: #1DA1F2;
-        }
-
-        .social-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Анимация для социальных кнопок */
-        .social-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
     </style>
 </head>
@@ -193,14 +145,6 @@ ViewData["Title"] = "Добро пожаловать";
         <a class="btn btn-secondary" href="@Url.Action("Login", "Home")">
             <i class="fas fa-sign-in-alt icon"></i> Вход
         </a>
-    </div>
-    <div class="additional-options">
-        <p>Или зарегистрируйтесь/войдите с помощью:</p>
-        <div class="social-buttons">
-            <button class="social-btn google"><i class="fab fa-google"></i></button>
-            <button class="social-btn facebook"><i class="fab fa-facebook-f"></i></button>
-            <button class="social-btn twitter"><i class="fab fa-twitter"></i></button>
-        </div>
     </div>
 </div>
 
