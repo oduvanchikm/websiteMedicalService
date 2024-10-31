@@ -22,4 +22,6 @@ public class Appointments
 
     [Required] 
     public string Status { get; set; } = string.Empty;
+    
+    // todo add reference to Clinic??????
 }

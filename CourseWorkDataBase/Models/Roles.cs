@@ -10,6 +10,5 @@ public class Roles
     [Required] 
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
-
     public virtual ICollection<Users> Users { get; set; } = new HashSet<Users>();
 }

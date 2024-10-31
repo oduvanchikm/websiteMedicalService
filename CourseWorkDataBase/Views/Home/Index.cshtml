@@ -1,0 +1,77 @@
+@{
+ViewData["Title"] = "Добро пожаловать";
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <title>@ViewData["Title"] - ToDo List</title>
+    <link rel="stylesheet" href="~/css/index.css"/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .welcome-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #4a90e2;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 30px;
+            font-size: 18px;
+            color: #555;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center; /* Центрируем кнопки */
+            gap: 15px; /* Пробел между кнопками */
+        }
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .btn-primary {
+            background-color: #4a90e2;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-primary:hover {
+            background-color: #357ab8;
+            transform: scale(1.05);
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+<div class="welcome-container">
+    <h1>Добро пожаловать в ToDo List!</h1>
+    <p>Пожалуйста, выберите действие:</p>
+    <div class="button-group">
+        <a class="btn btn-primary" href="@Url.Action("Register", "Home")">Регистрация</a>
+        <a class="btn btn-secondary" href="@Url.Action("Login", "Home")">Вход</a>
+    </div>
+</div>
+</body>
+</html>
