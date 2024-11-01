@@ -5,11 +5,11 @@ namespace CourseWorkDataBase.Models;
 public class Clinic
 {
     [Key]
-    public int Id { get; set; }
+    public long Id { get; set; }
     
     [Required]
-    public string Address { get; set; } = String.Empty;
+    public string Address { get; set; }
     
     [Required]
-    public string PhoneNumber { get; set; } = String.Empty;
+    public string PhoneNumber { get; set; } 
 }

@@ -6,7 +6,7 @@ namespace CourseWorkDataBase.Models;
 public class MedicalRecords
 {
     [Key]
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     [Required] 
     public string Description { get; set; } = string.Empty;

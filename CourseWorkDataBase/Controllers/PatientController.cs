@@ -21,9 +21,4 @@ public class PatientController : Controller
             .ToListAsync();
         return View(doctors);
     }
-
-    // public IActionResult Error()
-    // {
-    //     return View();
-    // }
 }
