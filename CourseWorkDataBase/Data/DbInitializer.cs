@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using CourseWorkDataBase.Models;
 
 namespace CourseWorkDataBase.Data;
 

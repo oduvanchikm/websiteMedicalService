@@ -1,6 +1,6 @@
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using CourseWorkDataBase.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Data;
 
@@ -8,12 +8,14 @@ public class RegistrationService
 {
     private readonly ApplicationDbContext _context;
 
-    public RegistrationService(ApplicationDbContext context)
+    public RegistrationService(
+        ApplicationDbContext context)
+
     {
         _context = context;
     }
 
-    public async Task<Patient> RegisterPage(string email, string password, string firstName, string familyName, string contactInfo, string gender)
+    public async Task<Patient> RegisterPage(string email, string password, string firstName, string familyName, string gender)
     {
         if (await _context.Users.AnyAsync(u => u.Email == email))
         {
@@ -42,7 +44,6 @@ public class RegistrationService
             UserID = user.Id,
             FirstName = firstName,
             FamilyName = familyName,
-            ContactInfo = contactInfo,
             Gender = gender
         };
 
@@ -51,5 +52,4 @@ public class RegistrationService
         
         return patient;
     }
-
 }

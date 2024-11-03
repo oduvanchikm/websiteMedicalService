@@ -7,7 +7,7 @@ public class Patient
 {
     public long Id { get; set; }
 
-    [ForeignKey("User")]
+    [ForeignKey("ApplicationUser")]
     public long UserID { get; set; }
     public User User { get; set; }
 
@@ -18,8 +18,6 @@ public class Patient
     [Required]
     [MaxLength(50)]
     public string FamilyName { get; set; }
-
-    public string ContactInfo { get; set; }
 
     public string Gender { get; set; }
 }

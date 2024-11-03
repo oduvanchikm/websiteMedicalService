@@ -14,12 +14,13 @@ public class AuthorizationController : Controller
         _authService = authService;
     }
     
+    [HttpGet]
     public IActionResult AuthorizationPage()
     {
         return View();
     }
 
-    [HttpPost("login/user")]
+    [HttpPost]
     public async Task<IActionResult> LoginUser(LoginUserRequest request)
     {
         var user = await _authService.AuthenticateUser(request.Email, request.Password);
@@ -31,8 +32,8 @@ public class AuthorizationController : Controller
         return RedirectToAction("PatientPage", "Patient");
     }
 
-    [HttpPost("login/doctor")]
-    public async Task<IActionResult> LoginDoctor([FromBody] LoginDoctorRequest request)
+    [HttpPost]
+    public async Task<IActionResult> LoginDoctor(LoginDoctorRequest request)
     {
         var doctor = await _authService.AuthenticateDoctor(request.PersonalNumber);
         if (doctor == null)

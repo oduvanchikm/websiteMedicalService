@@ -1,7 +1,7 @@
 using System.Text;
 using System.Security.Cryptography;
 
-namespace CourseWorkDataBase.Services;
+namespace CourseWorkDataBase.Helpers;
 
 public class PasswordHelper
 {

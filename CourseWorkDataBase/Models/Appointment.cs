@@ -3,19 +3,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CourseWorkDataBase.Models;
 
-public class Appointments
+public class Appointment
 {
     [Key] 
     public long Id { get; set; }
 
     [ForeignKey("Patient")] 
-    public int PatientId { get; set; }
+    public long PatientId { get; set; }
     public Patient Patient { get; set; } = null!;
 
     
-    [ForeignKey("Doctor")] 
-    public int DoctorId { get; set; }
-    public Doctor Doctor { get; set; } = null!;
+    [ForeignKey("AppointmentSlot")]
+    public long AppointmentSlotId { get; set; }
+    public AppointmentSlot AppointmentSlot { get; set; }
 
     [Required] 
     public DateTime Date { get; set; } = DateTime.UtcNow;

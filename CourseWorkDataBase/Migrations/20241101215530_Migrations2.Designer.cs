@@ -3,6 +3,7 @@ using System;
 using CourseWorkDataBase.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CourseWorkDataBase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241101215530_Migrations2")]
+    partial class Migrations2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,10 +67,10 @@ namespace CourseWorkDataBase.Migrations
                     b.Property<long>("DoctorId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTimeOffset>("EndTime")
+                    b.Property<DateTime>("EndTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset>("StartTime")
+                    b.Property<DateTime>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -138,6 +141,10 @@ namespace CourseWorkDataBase.Migrations
                         .HasColumnType("bigint");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ContactInfo")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("FamilyName")
                         .IsRequired()
@@ -273,7 +280,7 @@ namespace CourseWorkDataBase.Migrations
             modelBuilder.Entity("CourseWorkDataBase.Models.AppointmentSlot", b =>
                 {
                     b.HasOne("CourseWorkDataBase.Models.Doctor", "Doctor")
-                        .WithMany("AppointmentSlots")
+                        .WithMany()
                         .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -318,11 +325,6 @@ namespace CourseWorkDataBase.Migrations
                 {
                     b.Navigation("Appointment")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("CourseWorkDataBase.Models.Doctor", b =>
-                {
-                    b.Navigation("AppointmentSlots");
                 });
 #pragma warning restore 612, 618
         }

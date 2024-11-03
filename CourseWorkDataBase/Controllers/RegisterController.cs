@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.Models;
 using CourseWorkDataBase.Data;
 
@@ -24,9 +22,19 @@ public class RegisterController : Controller
     [HttpPost]
     public async Task<IActionResult> RegisterPage(RegisterPatientRequest request)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(request);
+        }
+        
         try
         {
-            var patient = await _registrationService.RegisterPage(request.Email, request.Password, request.FirstName, request.FamilyName, request.ContactInfo, request.Gender);
+            var patient = await _registrationService.RegisterPage(
+                request.Email, 
+                request.Password, 
+                request.FirstName, 
+                request.FamilyName, 
+                request.Gender);
             return RedirectToAction("AuthorizationPage", "Authorization");
         }
         catch (ApplicationException ex)

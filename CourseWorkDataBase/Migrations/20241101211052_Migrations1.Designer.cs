@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CourseWorkDataBase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241101162357_Migrations")]
-    partial class Migrations
+    [Migration("20241101211052_Migrations1")]
+    partial class Migrations1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,60 @@ namespace CourseWorkDataBase.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("CourseWorkDataBase.Models.Clinic", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Clinics");
+                });
+
+            modelBuilder.Entity("CourseWorkDataBase.Models.Doctor", b =>
+                {
+                    b.Property<long>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ID"));
+
+                    b.Property<string>("FamilyName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PersonalNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<long>("SpecialtyID")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("SpecialtyID");
+
+                    b.ToTable("Doctors");
+                });
 
             modelBuilder.Entity("CourseWorkDataBase.Models.Patient", b =>
                 {
@@ -82,8 +136,42 @@ namespace CourseWorkDataBase.Migrations
                         new
                         {
                             Id = 1L,
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Name = "Doctor"
+                        },
+                        new
+                        {
+                            Id = 3L,
                             Name = "Patient"
                         });
+                });
+
+            modelBuilder.Entity("CourseWorkDataBase.Models.Specialty", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("ClinicId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NameSpecialty")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Specialties");
                 });
 
             modelBuilder.Entity("CourseWorkDataBase.Models.User", b =>
@@ -113,6 +201,17 @@ namespace CourseWorkDataBase.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("CourseWorkDataBase.Models.Doctor", b =>
+                {
+                    b.HasOne("CourseWorkDataBase.Models.Specialty", "Specialty")
+                        .WithMany()
+                        .HasForeignKey("SpecialtyID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Specialty");
                 });
 
             modelBuilder.Entity("CourseWorkDataBase.Models.Patient", b =>

@@ -22,5 +22,5 @@ public class MedicalRecords
     
     [ForeignKey("Appointments")] 
     public int AppointmentID { get; set; }
-    public Appointments Appointments { get; set; } = null!;
+    public Appointment Appointment { get; set; } = null!;
 }

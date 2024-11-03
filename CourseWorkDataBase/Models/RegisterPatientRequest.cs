@@ -18,8 +18,6 @@ public class RegisterPatientRequest
     [Required]
     public string FamilyName { get; set; }
 
-    public string ContactInfo { get; set; }
-
     public string Gender { get; set; }
 
 }

@@ -159,7 +159,8 @@ ViewData["Title"] = "Authorization";
             <label for="user-password" style="display: none;">Пароль</label>
             <input type="password" id="user-password" name="Password" placeholder="Пароль" required>
             
-            <button type="submit">Войти</button>
+            @* <button type="submit">Войти</button> *@
+            <a href="@Url.Action("PatientPage", "Patient")">Войти</a>
         </form>
 
         <!-- Форма авторизации врача -->
@@ -168,8 +169,9 @@ ViewData["Title"] = "Authorization";
             
             <label for="doctor-personal-number" style="display: none;">Личный номер</label>
             <input type="text" id="doctor-personal-number" name="PersonalNumber" placeholder="Личный номер" required>
-            
-            <button type="submit">Войти</button>
+
+            <a href="@Url.Action("DoctorPage", "Doctor")">Войти</a>
+            @* <button type="submit">Войти</button> *@
         </form>
     </div>
 

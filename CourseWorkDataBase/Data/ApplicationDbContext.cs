@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.Models;
+using CourseWorkDataBase.Helpers;
 
 namespace CourseWorkDataBase.Data;
 
@@ -16,41 +17,36 @@ public class ApplicationDbContext : DbContext
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<Specialty> Specialties { get; set; }
     public DbSet<Clinic> Clinics { get; set; }
-    // public DbSet<Appointments> Appointments { get; set; }
+    public DbSet<Appointment> Appointments { get; set; }
+    public DbSet<AppointmentSlot> AppointmentSlots { get; set; } 
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Role>().HasData(new Role { Id = 1, Name = "Patient" });
-        // base.OnModelCreating(modelBuilder);
-        //
-        // modelBuilder.Entity<Roles>().HasData(
-        //     new Roles { Id = -1, Name = "Admin" },
-        //     new Roles { Id = -2, Name = "Patient" },
-        //     new Roles { Id = -3, Name = "Doctor" }
+        modelBuilder.Entity<Role>().HasData(
+            new Role { Id = 1, Name = "Admin" },        
+            new Role { Id = 2, Name = "Doctor" },      
+            new Role { Id = 3, Name = "Patient" }
+        );
+        
+        modelBuilder.Entity<AppointmentSlot>(entity =>
+        {
+            entity.Property(e => e.StartTime)
+                .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.EndTime)
+                .HasColumnType("timestamp with time zone");
+        });
+
+
+        // var hasher = PasswordHelper.HashPassword("20012005", "mkgubareva2005@gmail.com");
+        // modelBuilder.Entity<User>().HasData(
+        //     new User
+        //     {
+        //         Id = 1, 
+        //         Email = "mkgubareva2005@gmail.com",
+        //         Password = "20012005", 
+        //         CreatedAt = DateTime.UtcNow,
+        //         RoleId = 1
+        //     }
         // );
-        //
-        // modelBuilder.Entity<Doctor>()
-        //     .HasOne(d => d.Specialty)
-        //     .WithMany(s => s.Doctors)
-        //     .HasForeignKey(d => d.SpecialtyID)
-        //     .OnDelete(DeleteBehavior.Restrict);
-        //
-        // modelBuilder.Entity<Appointments>()
-        //     .HasOne(a => a.Doctor)
-        //     .WithMany(d => d.Appointments)
-        //     .HasForeignKey(a => a.DoctorId)
-        //     .OnDelete(DeleteBehavior.Restrict);
-        //
-        // modelBuilder.Entity<Appointments>()
-        //     .HasOne(a => a.User)
-        //     .WithMany(u => u.Appointments)
-        //     .HasForeignKey(a => a.UserId)
-        //     .OnDelete(DeleteBehavior.Restrict);
-        //
-        // modelBuilder.Entity<User>()
-        //     .HasOne(u => u.Role)
-        //     .WithMany(r => r.)
-        //     .HasForeignKey(u => u.RoleId)
-        //     .OnDelete(DeleteBehavior.Restrict);
     }
 }

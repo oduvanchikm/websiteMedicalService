@@ -1,205 +1,230 @@
+@using CourseWorkDataBase.Models
+@model IEnumerable<AppointmentSlot>
+
 @{
-ViewData["Title"] = "Вход";
+    ViewData["Title"] = "Личный кабинет врача";
 }
 
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8"/>
-    <title>@ViewData["Title"] - ToDo List</title>
-    <link rel="stylesheet" href="~/css/index.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>@ViewData["Title"]</title>
+    <!-- Подключение Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Пользовательские стили -->
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        /* Основные стили */
         body {
+            background-color: #f8f0fc;
+            color: #4b0082;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(
-                rgba(0, 0, 0, 0.5),
-                rgba(0, 0, 0, 0.5)
-            ), url('https://amcmedlife.ru/wp-content/uploads/revslider/demo-medical/slide-medical-2.jpg') no-repeat center center fixed;
-            background-size: cover;
-            color: #fff;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            line-height: 1.6;
+            padding: 20px;
         }
 
-        /* Контейнер страницы входа */
-        .login-container {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 50px 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
-            max-width: 500px;
-            width: 100%;
+        .container-custom {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            color: #4b0082;
+            margin-bottom: 30px;
             text-align: center;
-            animation: fadeIn 1s ease-in-out;
         }
 
-        .login-container h2 {
-            color: #6f42c1;
-            margin-bottom: 25px;
-            font-size: 32px;
-            position: relative;
-            display: inline-block;
-            padding-bottom: 10px;
+        /* Вертикальная навигация */
+        .nav-pills-custom {
+            flex-direction: column;
+            background-color: #e0f7fa; /* Бледно-голубой фон */
+            border-radius: 10px;
+            padding: 10px;
         }
 
-        .login-container h2::after {
-            content: '';
-            width: 50px;
-            height: 3px;
-            background-color: #6f42c1;
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            border-radius: 2px;
-        }
-
-        /* Форма */
-        form {
-            margin-top: 20px;
-        }
-
-        form .form-group {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
+        .nav-pills-custom .nav-link {
+            color: #004d40; /* Темно-зеленый текст */
             margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
+            border-radius: 5px;
+            background-color: #b2ebf2; /* Еще бледнее голубое */
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        input {
-            width: 100%;
-            padding: 12px 40px 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            transition: border-color 0.3s;
-            font-size: 16px;
-        }
-
-        input:focus {
-            border-color: #6f42c1;
-            outline: none;
-        }
-
-        .form-group .fa {
-            position: absolute;
-            top: 38px;
-            right: 15px;
-            color: #6f42c1;
-            pointer-events: none;
-        }
-
-        /* Кнопка входа */
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #6f42c1;
-            border: none;
+        .nav-pills-custom .nav-link.active {
+            background-color: #4dd0e1;
             color: white;
-            font-size: 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        button:hover {
-            background-color: #593f9d;
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(89, 63, 157, 0.3);
+        .nav-pills-custom .nav-link:hover {
+            background-color: #81d4fa;
+            color: white;
         }
 
-        /* Социальные кнопки */
-        .social-login {
+        .doctor-info {
+            text-align: center;
             margin-top: 30px;
         }
 
-        .social-login p {
-            margin-bottom: 10px;
-            font-size: 16px;
-            color: #333;
+        .doctor-info img {
+            border-radius: 10px;
+            border: 5px solid #4dd0e1;
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .social-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
+        blockquote {
+            font-size: 1rem;
+            color: #6a0dad;
+            margin-top: 20px;
+            padding: 10px;
+            border-left: 5px solid #4dd0e1;
+            background-color: #e0f7fa;
+            border-radius: 5px;
         }
 
-        .social-btn {
-            background-color: #4267B2; /* Facebook */
-            color: #fff;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 50%;
-            font-size: 18px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .social-btn.google {
-            background-color: #DB4437;
-        }
-
-        .social-btn.twitter {
-            background-color: #1DA1F2;
-        }
-
-        .social-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .additional-options {
-            margin-top: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .additional-options a {
-            color: #6f42c1;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
+        blockquote footer {
+            color: #4dd0e1;
             margin-top: 10px;
+            display: block;
+            text-align: right;
+            font-size: 0.8rem;
         }
 
-        .additional-options a:hover {
-            color: #593f9d;
+        .slots-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
         }
 
-        .error-message {
-            color: red;
-            margin-bottom: 10px;
-            font-size: 14px;
+        .slots-table th, .slots-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .slots-table th {
+            background-color: #4dd0e1;
+            color: white;
+        }
+
+        .slots-table tr:nth-child(even) {
+            background-color: #e0f7fa;
+        }
+
+        .slots-table tr:hover {
+            background-color: #b2ebf2;
+        }
+
+        .btn-custom {
+            background-color: #4dd0e1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 2px;
+        }
+
+        .btn-custom:hover {
+            background-color: #00acc1;
+        }
+
+        .btn-delete {
+            background-color: #ff4d4d;
+        }
+
+        .btn-delete:hover {
+            background-color: #e60000;
         }
     </style>
 </head>
 <body>
+<div class="container-custom">
+    <div class="page-title">
+        <b>Личный кабинет врача</b>
+    </div>
 
-<div class="login-container">
-    <h2><i class="fas fa-sign-in-alt"></i> HELLO DOCTOR</h2>
+    <div class="row">
+        <!-- Вертикальная навигация -->
+        <div class="col-md-3">
+            <ul class="nav nav-pills nav-pills-custom">
+                <li class="nav-item mb-2">
+                    <a class="nav-link active" asp-action="DoctorDashboard">Управление слотами</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" asp-action="ViewPatients">Посмотреть пациентов</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link" asp-action="Settings">Настройки</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-md-9">
+            <div class="doctor-info">
+                @* <img src="https://via.placeholder.com/800x200?text=Доктор+и+Пациенты" alt="Доктор и пациенты" *@
+                @*      class="img-fluid mb-4"> *@
+                <blockquote class="blockquote text-center">
+                    <p class="mb-0">"Лучшее, что можно сделать для себя - это заботиться о своем здоровье."</p>
+                </blockquote>
+            </div>
+
+            <table class="slots-table">
+                @if (Model != null && Model.Any())
+                {
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>Дата и время начала</th>
+                            <th>Дата и время окончания</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var slot in Model)
+                        {
+                            <tr>
+                                <td>@slot.StartTime.ToLocalTime().ToString("g")</td>
+                                <td>@slot.EndTime.ToLocalTime().ToString("g")</td>
+                                <td>@(slot.IsBooked ? "Занято" : "Свободно")</td>
+                                <td>
+                                    @if (!slot.IsBooked)
+                                    {
+                                        <form asp-action="DeleteSlot" method="post" style="display:inline;">
+                                            <input type="hidden" name="id" value="@slot.Id"/>
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Вы уверены, что хотите удалить этот слот?');">Удалить</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Недоступно</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>Нет доступных слотов для отображения.</p>
+                }
+            </table>
+        </div>
+    </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

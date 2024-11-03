@@ -21,7 +21,7 @@ public class Doctor
 
     [ForeignKey("Specialty")]
     public long SpecialtyID { get; set; }
-
     public Specialty Specialty { get; set; }
-
+    
+    public ICollection<AppointmentSlot> AppointmentSlots { get; set; }
 }

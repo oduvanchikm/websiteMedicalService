@@ -1,5 +1,4 @@
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.Models;
 
@@ -9,11 +8,12 @@ public class AuthorizationService
 {
     private readonly ApplicationDbContext _context;
 
-    public AuthorizationService(ApplicationDbContext context)
+    public AuthorizationService(
+        ApplicationDbContext context)
     {
         _context = context;
     }
-
+    
     public async Task<User> AuthenticateUser(string email, string password)
     {
         return await _context.Users
@@ -27,5 +27,4 @@ public class AuthorizationService
             .Include(d => d.Specialty)
             .FirstOrDefaultAsync(d => d.PersonalNumber == personalNumber);
     }
-
 }
