@@ -117,7 +117,6 @@ ViewData["Title"] = "Authorization";
             box-shadow: 0 4px 15px rgba(89, 57, 161, 0.3);
         }
 
-        /* Заголовок формы */
         h2 {
             text-align: center;
             margin-bottom: 20px;
@@ -136,7 +135,6 @@ ViewData["Title"] = "Authorization";
             border-radius: 2px;
         }
 
-        /* Стиль плейсхолдеров */
         ::placeholder {
             color: #999;
         }
@@ -149,7 +147,6 @@ ViewData["Title"] = "Authorization";
             <div class="tab" id="doctor-tab">Врач</div>
         </div>
 
-        <!-- Форма авторизации пользователя -->
         <form class="form active" id="user-form" action="/login/user" method="POST">
             <h2>Вход для пользователей</h2>
             
@@ -163,7 +160,6 @@ ViewData["Title"] = "Authorization";
             <a href="@Url.Action("PatientPage", "Patient")">Войти</a>
         </form>
 
-        <!-- Форма авторизации врача -->
         <form class="form" id="doctor-form" action="/login/doctor" method="POST">
             <h2>Вход для врачей</h2>
             

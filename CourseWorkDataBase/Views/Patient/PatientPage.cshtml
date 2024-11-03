@@ -2,92 +2,54 @@
 @model IEnumerable<Doctor>
 
 @{
-    ViewData["Title"] = "Главная";
+    ViewData["Title"] = "Список Врачей";
 }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Медицинский Центр</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
 <div class="container mt-5">
-    <h1 class="mb-4">Список врачей</h1>
-    @if (Model == null)
-    {
-        <div class="alert alert-danger">Данные не загружены.</div>
-    }
-    else if (!Model.Any())
-    {
-        <p>Нет доступных врачей.</p>
-    }
-    else
-    {
-        <div class="accordion" id="doctorsAccordion">
-            @foreach (var doctor in Model)
+    <h1 class="mb-4">Наши Врачи</h1>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ФИО</th>
+            <th>Специализация</th>
+            <th>Опыт (лет)</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var doctor in Model)
             {
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading@doctor.DoctorId">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse@doctor.DoctorId" aria-expanded="false" aria-controls="collapse@doctor.DoctorId">
-                            @doctor.FirstName @doctor.FamilyName - @doctor.Specialty.NameSpecialty
-                        </button>
-                    </h2>
-                    <div id="collapse@doctor.DoctorId" class="accordion-collapse collapse" aria-labelledby="heading@doctor.DoctorId" data-bs-parent="#doctorsAccordion">
-                        <div class="accordion-body">
-                            <h5>Предстоящие приемы:</h5>
-                            @* @if (doctor. != null && doctor.Appointments.Any()) *@
-                            @* { *@
-                            @*     <table class="table table-hover"> *@
-                            @*         <thead> *@
-                            @*         <tr> *@
-                            @*             <th>Дата и время</th> *@
-                            @*             <th>Пациент</th> *@
-                            @*             <th>Действия</th> *@
-                            @*         </tr> *@
-                            @*         </thead> *@
-                            @*         <tbody> *@
-                            @*         @foreach (var appointment in doctor.Appointments.OrderBy(a => a.Date)) *@
-                            @*         { *@
-                            @*             <tr> *@
-                            @*                 <td>@appointment.Date.ToString("dd.MM.yyyy HH:mm")</td> *@
-                            @*                 <td>@appointment.User</td> *@
-                            @*                 <td> *@
-                            @*                     <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#appointmentModal@appointment.AppointmentDate.Ticks"> *@
-                            @*                         Подробнее *@
-                            @*                     </button> *@
-                            @*                     <div class="modal fade" id="appointmentModal@appointment.AppointmentDate.Ticks" tabindex="-1" aria-labelledby="appointmentModalLabel@appointment.AppointmentDate.Ticks" aria-hidden="true"> *@
-                            @*                         <div class="modal-dialog"> *@
-                            @*                             <div class="modal-content"> *@
-                            @*                                 <div class="modal-header"> *@
-                            @*                                     <h5 class="modal-title" id="appointmentModalLabel@appointment.AppointmentDate.Ticks">Детали приёма</h5> *@
-                            @*                                     <button type="button" class="btn-close" data-bs-dismiss="model" aria-label="Закрыть"></button> *@
-                            @*                                 </div> *@
-                            @*                                 <div class="modal-body"> *@
-                            @*                                     <p> *@
-                            @*                                         <strong>Дата и время:</strong> @appointment.Date.ToString("dd.MM.yyyy HH:mm") *@
-                            @*                                     </p> *@
-                            @*                                     <p> *@
-                            @*                                         <strong>Пациент:</strong> @appointment.User *@
-                            @*                                     </p> *@
-                            @*                                 </div> *@
-                            @*                                 <div class="modal-footer"> *@
-                            @*                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button> *@
-                            @*                                 </div> *@
-                            @*                             </div> *@
-                            @*                         </div> *@
-                            @*                     </div> *@
-                            @*                 </td> *@
-                            @*             </tr> *@
-                            @*         } *@
-                            @*         </tbody> *@
-                            @*     </table> *@
-                            @* } *@
-                            @* else *@
-                            @* { *@
-                            @*     <p>Нет предстоящих приемов.</p> *@
-                            @* } *@
-                        </div>
-                    </div>
-                </div>
+                <tr>
+                    <td>@doctor.FirstName</td>
+                    <td>@doctor.FamilyName</td>
+                    <td>@doctor.Specialty.NameSpecialty</td>
+                    <td>
+                        <a href="@Url.Action("ViewDoctor", "Patient", new { doctorId = doctor.ID })" class="btn btn-info btn-sm">Просмотр</a>
+                    </td>
+                </tr>
             }
-        </div>
-    }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" class="text-center">Врачи не найдены.</td>
+            </tr>
+        }
+        </tbody>
+    </table>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

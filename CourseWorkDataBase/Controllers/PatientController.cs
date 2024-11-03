@@ -25,10 +25,10 @@ public class PatientController : Controller
         return View(doctors);
     }
 
-    public async Task<IActionResult> Watch(long doctorId)
+    public async Task<IActionResult> ViewDoctor(long doctorId)
     {
         var slots = await _context.AppointmentSlots
-            .Where(s => s.DoctorId == doctorId && s.StartTime >= DateTime.Today && s.Appointment == null)
+            .Where(s => s.DoctorId == doctorId && s.StartTime >= DateTime.Today)
             .OrderBy(s => s.StartTime)
             .ToListAsync();
 
@@ -50,42 +50,47 @@ public class PatientController : Controller
     
     // [HttpPost]
     // [ValidateAntiForgeryToken]
-    // public async Task<IActionResult> Book(long slotId)
+    // public async Task<IActionResult> BookAppointment(long slotId)
     // {
-    //     var slot = await _context.AppointmentSlots.Include(s => s.Appointment).FirstOrDefaultAsync(s => s.Id == slotId);
+    //     var slot = await _context.AppointmentSlots
+    //         .Include(s => s.Doctor)
+    //         .FirstOrDefaultAsync(s => s.Id == slotId);
+    //
     //     if (slot == null || slot.IsBooked)
     //     {
-    //         return NotFound();
+    //         return RedirectToAction("PatientPage");
     //     }
     //
     //     var appointment = new Appointment
     //     {
-    //         AppointmentSlotId = slotId,
-    //         Id = User.FindFirstValue(ClaimTypes.NameIdentifier),
+    //         AppointmentSlotId = slot.Id,
+    //         PatientId = 
     //          = DateTime.UtcNow
     //     };
     //
-    //     _context.Appointments.Add(appointment);
-    //     await _context.SaveChangesAsync();
+    //     slot.IsBooked = true; // Mark the slot as booked
     //
+    //     _context.Appointments.Add(appointment);
+    //     _context.Entry(slot).State = EntityState.Modified;
+    //
+    //     await _context.SaveChangesAsync();
+    //     
     //     return RedirectToAction("MyAppointments");
     // }
 
     // public async Task<IActionResult> MyAppointments()
     // {
-    //     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    //     var userId = /* Get current patient's ID, e.g., from User.Identity */;
     //     var appointments = await _context.Appointments
-    //         .Include(a => a.AppointmentSlot)
+    //         .Include(a => a.Slot)
     //         .ThenInclude(s => s.Doctor)
-    //         .Include(a => a.AppointmentSlot)
-    //         .ThenInclude(s => s.Doctor)
-    //         .ThenInclude(d => d.Specialty.ClinicId)
-    //         .Where(a => a.Id == userId)
-    //         .OrderBy(a => a.AppointmentSlot.StartTime)
+    //         .Where(a => a.PatientId == userId)
+    //         .OrderByDescending(a => a.BookedAt)
     //         .ToListAsync();
     //
     //     return View(appointments);
     // }
+
 
     // Просмотр медицинской карты
     // public async Task<IActionResult> MedicalRecord(long appointmentId)
