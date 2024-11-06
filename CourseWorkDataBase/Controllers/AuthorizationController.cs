@@ -32,15 +32,15 @@ public class AuthorizationController : Controller
         return RedirectToAction("PatientPage", "Patient");
     }
 
-    [HttpPost]
-    public async Task<IActionResult> LoginDoctor(LoginDoctorRequest request)
-    {
-        var doctor = await _authService.AuthenticateDoctor(request.PersonalNumber);
-        if (doctor == null)
-        {
-            return Unauthorized("Invalid personal number.");
-        }
-
-        return RedirectToAction("DoctorPage", "Doctor");
-    }
+    // [HttpPost]
+    // public async Task<IActionResult> LoginDoctor(LoginDoctorRequest request)
+    // {
+    //     var doctor = await _authService.AuthenticateDoctor(request.PersonalNumber);
+    //     if (doctor == null)
+    //     {
+    //         return Unauthorized("Invalid personal number.");
+    //     }
+    //
+    //     return RedirectToAction("DoctorPage", "Doctor");
+    // }
 }

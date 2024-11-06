@@ -5,21 +5,16 @@ namespace CourseWorkDataBase.Models;
 
 public class Appointment
 {
-    [Key] 
     public long Id { get; set; }
-
-    [ForeignKey("Patient")] 
-    public long PatientId { get; set; }
-    public Patient Patient { get; set; } = null!;
-
     
-    [ForeignKey("AppointmentSlot")]
-    public long AppointmentSlotId { get; set; }
+    public Patient Patient { get; set; }
+    public long PatientId { get; set; }
+    
     public AppointmentSlot AppointmentSlot { get; set; }
-
-    [Required] 
+    public long AppointmentSlotId { get; set; }
+    
     public DateTime Date { get; set; } = DateTime.UtcNow;
 
-    [Required] 
-    public string Status { get; set; } = string.Empty;
+    public Status Status { get; set; }
+    public long StatusId { get; set; }
 }

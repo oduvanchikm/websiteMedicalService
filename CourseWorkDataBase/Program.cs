@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.Data;
+using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.Helpers;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -17,6 +18,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
+builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<RegistrationService>();
 builder.Services.AddScoped<AuthorizationService>();
 builder.Services.AddScoped<SlotInitializer>();
@@ -52,7 +54,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        await DbInitializer.InitializeAsync(context);
         logger.LogInformation("Применение миграций прошло успешно.");
     }
     catch (Exception ex)
@@ -95,5 +96,9 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "patient",
     pattern: "{controller=Patient}/{action=PatientPage}/{id?}");
+
+app.MapControllerRoute(
+    name: "admin",
+    pattern: "{controller=Admin}/{action=AddDoctor}/{id?}");
 
 app.Run();

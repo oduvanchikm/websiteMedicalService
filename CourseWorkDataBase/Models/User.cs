@@ -7,17 +7,18 @@ public class User
 {
     public long Id { get; set; }
     
-    [Required] 
-    [EmailAddress] 
     public string Email { get; set; }
-
-    [Required] 
-    public string Password { get; set; }
-
-    [ForeignKey("Role")] 
-    public long RoleId { get; set; }
+    
+    public string? Password { get; set; }
+    
+    public string? PersonalNumber { get; set; }
+    
     public Role Role { get; set; }
-
-    [Required] 
+    public long RoleId { get; set; }
+    
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    public Patient Patient { get; set; }
+    
+    public Doctor Doctor { get; set; }
 }

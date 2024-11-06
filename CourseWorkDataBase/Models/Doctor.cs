@@ -6,22 +6,16 @@ namespace CourseWorkDataBase.Models;
 public class Doctor
 {
     public long ID { get; set; }
-
-    [Required]
-    [MaxLength(50)]
-    public string PersonalNumber { get; set; }
-
-    [Required]
-    [MaxLength(50)]
-    public string FirstName { get; set; }
-
-    [Required]
-    [MaxLength(50)]
-    public string FamilyName { get; set; }
-
-    [ForeignKey("Specialty")]
-    public long SpecialtyID { get; set; }
-    public Specialty Specialty { get; set; }
     
-    public ICollection<AppointmentSlot> AppointmentSlots { get; set; }
+    public string FirstName { get; set; }
+    
+    public string FamilyName { get; set; }
+    
+    public Specialty Specialty { get; set; }
+    public long SpecialtyID { get; set; }
+    
+    public User User { get; set; }
+    public long UserId { get; set; }
+    
+    public List<AppointmentSlot> AppointmentSlots { get; set; }
 }

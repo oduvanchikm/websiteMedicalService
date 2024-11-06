@@ -1,5 +1,5 @@
 using CourseWorkDataBase.Models;
-using CourseWorkDataBase.Data;
+using CourseWorkDataBase.DAL;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Helpers;

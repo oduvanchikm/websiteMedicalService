@@ -1,0 +1,16 @@
+@model CourseWorkDataBase.Models.DoctorAddedViewModel
+
+@{
+    ViewData["Title"] = "Врач Добавлен";
+}
+
+<div class="container">
+    <h2 class="mb-4">Врач успешно добавлен</h2>
+
+    <div class="alert alert-success">
+        <strong>Имя:</strong> @Model.FullName<br />
+        <strong>Персональный номер:</strong> @Model.PersonalNumber
+    </div>
+
+    <a href="@Url.Action("DoctorsList", "Admin")">Перейти к списку врачей</a>
+</div>

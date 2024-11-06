@@ -1,13 +1,12 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using CourseWorkDataBase.Data;
+using CourseWorkDataBase.DAL;
 using Microsoft.AspNetCore.Authorization;
 using CourseWorkDataBase.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Controllers;
 
-// [Authorize(Roles = "Doctor")]
 public class DoctorController : Controller
 {
     private readonly ApplicationDbContext _context;

@@ -5,8 +5,6 @@ namespace CourseWorkDataBase.Models;
 
 public class RegisterPatientRequest
 {
-    [Required]
-    [EmailAddress]
     public string Email { get; set; }
 
     [Required]
