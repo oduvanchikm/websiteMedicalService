@@ -7,7 +7,7 @@ using CourseWorkDataBase.Models;
 
 namespace CourseWorkDataBase.Controllers;
 
-[Route("login")]
+// [Route("login")]
 public class AuthorizationController : Controller
 {
     private readonly AuthorizationService _authService;
@@ -17,15 +17,19 @@ public class AuthorizationController : Controller
         _authService = authService;
     }
     
-    [HttpGet("")]
+    [HttpGet]
     public IActionResult AuthorizationPage()
     {
         return View();
     }
 
-    [HttpPost("/login/user")]
-    public async Task<IActionResult> LoginUser(LoginUserRequest request)
+    [HttpPost]
+    public async Task<IActionResult> AuthorizationPage(LoginUserRequest request)
     {
+        
+        Console.Out.WriteLine(request.Email);
+        Console.Out.WriteLine(request.Password);
+        
         if (!ModelState.IsValid)
         {
             return BadRequest("Неверный запрос на вход.");

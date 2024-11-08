@@ -147,7 +147,7 @@ ViewData["Title"] = "Authorization";
         <div class="tab" id="doctor-tab">Врач</div>
     </div>
 
-    <form class="form" id="user-form" asp-action="/login/user" method="POST">
+    <form action="@Url.Action("AuthorizationPage", "Authorization")" method="POST">
         <h2>Вход для пользователей</h2>
 
         <label for="user-email" style="display: none;">Электронная почта</label>
@@ -156,18 +156,16 @@ ViewData["Title"] = "Authorization";
         <label for="user-password" style="display: none;">Пароль</label>
         <input type="password" id="user-password" name="Password" placeholder="Пароль" required>
 
-        @* <button type="submit">Войти</button> *@
-        <a href="@Url.Action("PatientPage", "Patient")">Войти</a>
+        <button type="submit">Войти</button>
     </form>
 
-    <form class="form" id="doctor-form" action="/login/doctor" method="POST">
+    <form action="@Url.Action("AuthorizationPage", "Authorization")" method="POST">
         <h2>Вход для врачей</h2>
 
         <label for="doctor-personal-number" style="display: none;">Личный номер</label>
         <input type="text" id="doctor-personal-number" name="PersonalNumber" placeholder="Личный номер" required>
-
-        <a href="@Url.Action("DoctorPage", "Doctor")">Войти</a>
-        @* <button type="submit">Войти</button> *@
+        
+        <button type="submit">Войти</button>
     </form>
 </div>
 
