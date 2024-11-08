@@ -42,7 +42,7 @@ public class RegistrationService
     
         var patient = new Patient
         {
-            Id = user.Id,
+            UserId = user.Id,
             FirstName = firstName,
             FamilyName = familyName,
             Gender = gender,

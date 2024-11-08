@@ -18,11 +18,13 @@ public class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
         
         builder.HasOne(x => x.User)
             .WithOne(x => x.Doctor)
-            .HasForeignKey<Doctor>(x => x.UserId);
+            .HasForeignKey<Doctor>(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         builder.HasOne(x => x.Specialty)
-            .WithOne(x => x.Doctor)
-            .HasForeignKey<Doctor>(x => x.SpecialtyID);
+            .WithMany(x => x.Doctors)
+            .HasForeignKey(d => d.SpecialtyID)
+            .OnDelete(DeleteBehavior.Restrict);
         
         builder.HasMany(x => x.AppointmentSlots)
             .WithOne(x => x.Doctor)

@@ -3,6 +3,7 @@ using System;
 using CourseWorkDataBase.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CourseWorkDataBase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241108203204_Migrations15")]
+    partial class Migrations15
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,7 +124,8 @@ namespace CourseWorkDataBase.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("SpecialtyID");
+                    b.HasIndex("SpecialtyID")
+                        .IsUnique();
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -257,6 +261,7 @@ namespace CourseWorkDataBase.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<string>("Password")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PersonalNumber")
@@ -313,9 +318,9 @@ namespace CourseWorkDataBase.Migrations
             modelBuilder.Entity("CourseWorkDataBase.Models.Doctor", b =>
                 {
                     b.HasOne("CourseWorkDataBase.Models.Specialty", "Specialty")
-                        .WithMany("Doctors")
-                        .HasForeignKey("SpecialtyID")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithOne("Doctor")
+                        .HasForeignKey("CourseWorkDataBase.Models.Doctor", "SpecialtyID")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("CourseWorkDataBase.Models.User", "User")
@@ -334,7 +339,7 @@ namespace CourseWorkDataBase.Migrations
                     b.HasOne("CourseWorkDataBase.Models.User", "User")
                         .WithOne("Patient")
                         .HasForeignKey("CourseWorkDataBase.Models.Patient", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -389,7 +394,8 @@ namespace CourseWorkDataBase.Migrations
 
             modelBuilder.Entity("CourseWorkDataBase.Models.Specialty", b =>
                 {
-                    b.Navigation("Doctors");
+                    b.Navigation("Doctor")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CourseWorkDataBase.Models.Status", b =>
@@ -399,9 +405,11 @@ namespace CourseWorkDataBase.Migrations
 
             modelBuilder.Entity("CourseWorkDataBase.Models.User", b =>
                 {
-                    b.Navigation("Doctor");
+                    b.Navigation("Doctor")
+                        .IsRequired();
 
-                    b.Navigation("Patient");
+                    b.Navigation("Patient")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

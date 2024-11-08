@@ -35,7 +35,7 @@ ViewData["Title"] = "Authorization";
             height: 100%;
             z-index: 1;
         }
-        
+
         .form-container {
             position: relative;
             z-index: 2;
@@ -46,7 +46,7 @@ ViewData["Title"] = "Authorization";
             width: 100%;
             max-width: 500px;
         }
-        
+
         .tabs {
             display: flex;
             margin-bottom: 20px;
@@ -69,7 +69,7 @@ ViewData["Title"] = "Authorization";
             color: #5939a1;
             font-weight: bold;
         }
-        
+
         .form {
             display: none;
         }
@@ -94,13 +94,13 @@ ViewData["Title"] = "Authorization";
             outline: none;
             box-shadow: 0 0 5px rgba(111, 66, 193, 0.5);
         }
-        
+
         select {
             appearance: none;
             background: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="5" viewBox="0 0 10 5"><path fill="%236f42c1" d="M0 0l5 5 5-5z"/></svg>') no-repeat right 15px center;
             background-size: 10px 5px;
         }
-        
+
         button {
             background-color: #6f42c1;
             color: #fff;
@@ -126,7 +126,7 @@ ViewData["Title"] = "Authorization";
         }
 
         h2::after {
-                    content: '';
+            content: '';
             display: block;
             width: 50px;
             height: 3px;
@@ -141,56 +141,55 @@ ViewData["Title"] = "Authorization";
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <div class="tabs">
-            <div class="tab active" id="user-tab">Пользователь</div>
-            <div class="tab" id="doctor-tab">Врач</div>
-        </div>
-
-        <form class="form active" id="user-form" action="/login/user" method="POST">
-            <h2>Вход для пользователей</h2>
-            
-            <label for="user-email" style="display: none;">Электронная почта</label>
-            <input type="email" id="user-email" name="Email" placeholder="Электронная почта" required>
-            
-            <label for="user-password" style="display: none;">Пароль</label>
-            <input type="password" id="user-password" name="Password" placeholder="Пароль" required>
-            
-            @* <button type="submit">Войти</button> *@
-            <a href="@Url.Action("PatientPage", "Patient")">Войти</a>
-        </form>
-
-        <form class="form" id="doctor-form" action="/login/doctor" method="POST">
-            <h2>Вход для врачей</h2>
-            
-            <label for="doctor-personal-number" style="display: none;">Личный номер</label>
-            <input type="text" id="doctor-personal-number" name="PersonalNumber" placeholder="Личный номер" required>
-
-            <a href="@Url.Action("DoctorPage", "Doctor")">Войти</a>
-            @* <button type="submit">Войти</button> *@
-        </form>
+<div class="form-container">
+    <div class="tabs">
+        <div class="tab active" id="user-tab">Пользователь</div>
+        <div class="tab" id="doctor-tab">Врач</div>
     </div>
 
-    <script>
-        // Смена вкладок
-        const userTab = document.getElementById('user-tab');
-        const doctorTab = document.getElementById('doctor-tab');
-        const userForm = document.getElementById('user-form');
-        const doctorForm = document.getElementById('doctor-form');
+    <form class="form" id="user-form" asp-action="/login/user" method="POST">
+        <h2>Вход для пользователей</h2>
 
-        userTab.addEventListener('click', () => {
-            userTab.classList.add('active');
-            doctorTab.classList.remove('active');
-            userForm.classList.add('active');
-            doctorForm.classList.remove('active');
-        });
+        <label for="user-email" style="display: none;">Электронная почта</label>
+        <input type="email" id="user-email" name="Email" placeholder="Электронная почта" required>
 
-        doctorTab.addEventListener('click', () => {
-            doctorTab.classList.add('active');
-            userTab.classList.remove('active');
-            doctorForm.classList.add('active');
-            userForm.classList.remove('active');
-        });
-    </script>
+        <label for="user-password" style="display: none;">Пароль</label>
+        <input type="password" id="user-password" name="Password" placeholder="Пароль" required>
+
+        @* <button type="submit">Войти</button> *@
+        <a href="@Url.Action("PatientPage", "Patient")">Войти</a>
+    </form>
+
+    <form class="form" id="doctor-form" action="/login/doctor" method="POST">
+        <h2>Вход для врачей</h2>
+
+        <label for="doctor-personal-number" style="display: none;">Личный номер</label>
+        <input type="text" id="doctor-personal-number" name="PersonalNumber" placeholder="Личный номер" required>
+
+        <a href="@Url.Action("DoctorPage", "Doctor")">Войти</a>
+        @* <button type="submit">Войти</button> *@
+    </form>
+</div>
+
+<script>
+    const userTab = document.getElementById('user-tab');
+    const doctorTab = document.getElementById('doctor-tab');
+    const userForm = document.getElementById('user-form');
+    const doctorForm = document.getElementById('doctor-form');
+
+    userTab.addEventListener('click', () => {
+        userTab.classList.add('active');
+        doctorTab.classList.remove('active');
+        userForm.classList.add('active');
+        doctorForm.classList.remove('active');
+    });
+
+    doctorTab.addEventListener('click', () => {
+        doctorTab.classList.add('active');
+        userTab.classList.remove('active');
+        doctorForm.classList.add('active');
+        userForm.classList.remove('active');
+    });
+</script>
 </body>
 </html>

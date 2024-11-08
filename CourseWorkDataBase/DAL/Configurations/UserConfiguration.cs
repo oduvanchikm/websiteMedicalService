@@ -15,7 +15,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(50);
         
         builder.Property(x => x.Password)
-            .IsRequired();
+            .IsRequired(false);
 
         builder.Property(x => x.PersonalNumber)
             .IsRequired(false);
@@ -30,10 +30,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         
         builder.HasOne(x => x.Patient)
             .WithOne(p => p.User)
-            .HasForeignKey<Patient>(p => p.UserId);
+            .HasForeignKey<Patient>(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         builder.HasOne(x => x.Doctor)
             .WithOne(d => d.User)
-            .HasForeignKey<Doctor>(d => d.UserId);
+            .HasForeignKey<Doctor>(d => d.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

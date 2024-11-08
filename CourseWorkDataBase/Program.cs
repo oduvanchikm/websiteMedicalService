@@ -1,8 +1,8 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.Data;
 using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.Helpers;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +16,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/AccessDenied";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.ExpireTimeSpan = TimeSpan.FromHours(1);
     });
 
 builder.Services.AddScoped<AdminService>();
@@ -100,5 +104,13 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "admin",
     pattern: "{controller=Admin}/{action=AddDoctor}/{id?}");
+
+app.MapControllerRoute(
+    name: "admin",
+    pattern: "{controller=Admin}/{action=AddDoctor}/{id?}");
+
+app.MapControllerRoute(
+    name: "admin/added",
+    pattern: "{controller=Admin}/{action=AddedDoctor}/{id?}");
 
 app.Run();

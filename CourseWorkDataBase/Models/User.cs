@@ -18,7 +18,7 @@ public class User
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
-    public Patient Patient { get; set; }
+    public Patient? Patient { get; set; }
     
-    public Doctor Doctor { get; set; }
+    public Doctor? Doctor { get; set; }
 }

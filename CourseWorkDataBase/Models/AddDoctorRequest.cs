@@ -6,18 +6,19 @@ namespace CourseWorkDataBase.Models;
 
 public class AddDoctorRequest
 {
-    [Required]
-    public string Email { get; set; }
+    [Required(ErrorMessage = "Email обязателен")]
+    [EmailAddress(ErrorMessage = "Некорректный формат Email")]
+    public string email { get; set; }
 
-    [Required]
-    public string FirstName { get; set; }
-    [Required]
-    public string FamilyName { get; set; }
-    
-    public long? SpecialtyId { get; set; }
+    [Required(ErrorMessage = "FirstName обязателен")]
+    public string firstName { get; set; }
 
-    [Required]
-    public string ClinicAddress { get; set; } 
-    [Required]
-    public string ClinicPhoneNumber { get; set; } 
+    [Required(ErrorMessage = "FamilyName обязателен")]
+    public string familyName { get; set; }
+ 
+    // public long? SpecialtyId { get; set; }
+    // [Required]
+    // public string ClinicAddress { get; set; } 
+    // [Required]
+    // public string ClinicPhoneNumber { get; set; } 
 }
