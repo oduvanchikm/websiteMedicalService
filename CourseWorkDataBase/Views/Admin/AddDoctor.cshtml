@@ -1,7 +1,7 @@
 @model CourseWorkDataBase.Models.AddDoctorRequest
 
 @{
-ViewData["Title"] = "AddDoctor";
+    ViewData["Title"] = "AddDoctor";
 }
 
 <!DOCTYPE html>
@@ -120,11 +120,75 @@ ViewData["Title"] = "AddDoctor";
 <body>
 <form action="@Url.Action("AddDoctor", "Admin")" method="POST">
     @Html.AntiForgeryToken()
-    <h2>Регистрация врача</h2>
-    <input type="text" name="FirstName" placeholder="Имя" required>
-    <input type="text" name="FamilyName" placeholder="Фамилия" required>
-    <input type="email" name="Email" placeholder="Электронная почта" required>
-    <button type="submit">Зарегистрироваться</button>
+
+    <div class="form-group">
+        <input type="text" name="FirstName" placeholder="Name" required>
+    </div>
+
+    <div class="form-group">
+        <input type="text" name="FamilyName" placeholder="Surname" required>
+    </div>
+
+    <div class="form-group">
+        <input type="email" name="Email" placeholder="Email" required>
+    </div>
+
+    <div class="form-group">
+        <input type="text" name="PersonalNumber" placeholder="Personal Number" required>
+    </div>
+
+    <div class="form-group">
+        <select name="SpecialtyId">
+            <option value="">-- Select specialization --</option>
+            @if (Model.Specialties != null)
+            {
+                @foreach (var specialty in Model.Specialties)
+                {
+                    <option value="@specialty.Value">@specialty.Text</option>
+                }
+            }
+            else
+            {
+                <option disabled>No specializations available</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <input type="text" name="SpecialtyName" placeholder="Specialty Name">
+    </div>
+
+    <div class="form-group">
+        <input type="text" name="Description" placeholder="Description">
+    </div>
+
+    <div class="form-group">
+        <select name="ClinicId">
+            <option value="">-- Select clinic --</option>
+            @if (Model.Clinics != null)
+            {
+                @foreach (var clinic in Model.Clinics)
+                {
+                    <option value="@clinic.Value">@clinic.Text</option>
+                }
+            }
+            else
+            {
+                <option disabled>No clinics available</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <input type="text" name="ClinicAddress" placeholder="Clinic Address">
+    </div>
+
+    <div class="form-group">
+        <input type="text" name="ClinicPhoneNumber" placeholder="Clinic Phone Number">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Register</button>
+
 </form>
 </body>
 </html>

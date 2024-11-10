@@ -19,43 +19,56 @@ public class AdminController : Controller
     }
     
     [HttpGet]
-    public IActionResult AddDoctor()
+    public async Task<IActionResult> AddDoctor()
     {
-        // var specialties = await GetSpecialtiesSelectListAsync();
-        //
-        // foreach(var s in specialties)
-        // {
-        //     Console.WriteLine($"ID: {s.Value}, Name: {s.Text}");
-        // }
-        //
-        // var viewModel = new AddDoctorViewModel()
-        // {
-        //     Doctor = new AddDoctorRequest(),
-        //     Specialties = specialties
-        // };
+        var specialties = await GetSpecialtiesSelectListAsync();
         
-        return View();
+        foreach(var s in specialties)
+        {
+            Console.WriteLine($"ID: {s.Value}, Name: {s.Text}");
+        }
+        
+        var clinics = await GetClinicsSelectListAsync();
+        
+        foreach(var s in clinics)
+        {
+            Console.WriteLine($"ID: {s.Value}, Name: {s.Text}");
+        }
+        
+        var viewModel = new AddDoctorRequest()
+        {
+            Specialties = specialties,
+            Clinics = clinics
+        };
+        
+        return View(viewModel);
     }
 
-    // private async Task<IEnumerable<SelectListItem>> GetSpecialtiesSelectListAsync()
-    // {
-    //     var specialties = await _context.Specialties
-    //         .OrderBy(s => s.NameSpecialty)
-    //         .ToListAsync();
-    //
-    //     return specialties.Select(s => new SelectListItem
-    //     {
-    //         Value = s.Id.ToString(),
-    //         Text = s.NameSpecialty
-    //     }).ToList();
-    // }
+    private async Task<IEnumerable<SelectListItem>> GetSpecialtiesSelectListAsync()
+    {
+        var specialties = await _context.Specialties
+            .OrderBy(s => s.NameSpecialty)
+            .ToListAsync();
     
-    // public async Task<IActionResult> AddDoctor()
-    // {
-    //     var specialties = await GetSpecialtiesSelectListAsync();
-    //     ViewBag.Specialties = specialties;
-    //     return View(new AddDoctorRequest());
-    // }
+        return specialties.Select(s => new SelectListItem
+        {
+            Value = s.Id.ToString(),
+            Text = s.NameSpecialty
+        }).ToList();
+    }
+    
+    private async Task<IEnumerable<SelectListItem>> GetClinicsSelectListAsync()
+    {
+        var clinic = await _context.Clinics
+            .OrderBy(s => s.Address)
+            .ToListAsync();
+    
+        return clinic.Select(s => new SelectListItem
+        {
+            Value = s.Id.ToString(),
+            Text = s.Address
+        }).ToList();
+    }
 
     [HttpPost]
     public async Task<IActionResult> AddDoctor(AddDoctorRequest model)
@@ -63,6 +76,12 @@ public class AdminController : Controller
         Console.Out.WriteLine(model.email);
         Console.Out.WriteLine(model.familyName);
         Console.Out.WriteLine(model.firstName);
+        Console.Out.WriteLine(model.specialtyId);
+        Console.Out.WriteLine(model.specialtyName);
+        Console.Out.WriteLine(model.description);
+        Console.Out.WriteLine(model.clinicId);
+        Console.Out.WriteLine(model.clinicAddress);
+        Console.Out.WriteLine(model.clinicPhoneNumber);
         
         if (!ModelState.IsValid)
         {
@@ -73,6 +92,8 @@ public class AdminController : Controller
                     Console.Out.WriteLine(error.ErrorMessage);
                 }
             }
+            model.Specialties = await GetSpecialtiesSelectListAsync();
+            model.Clinics = await GetClinicsSelectListAsync();
             return View(model);
         }
 
@@ -81,13 +102,17 @@ public class AdminController : Controller
             var doctor = await _adminService.AddDoctorAsync(
                 model.email,
                 model.familyName,
-                model.firstName
-                // model.SpecialtyId,
-                // model.ClinicAddress,
-                // model.ClinicPhoneNumber
+                model.firstName,
+                model.personalNumber,
+                model.specialtyId,
+                model.specialtyName,
+                model.description,
+                model.clinicId,
+                model.clinicAddress,
+                model.clinicPhoneNumber
             );
 
-            return RedirectToAction("AddedDoctor", "Admin");
+            return RedirectToAction("DoctorsList", "Admin");
         }
         catch (Exception ex)
         {
@@ -102,8 +127,8 @@ public class AdminController : Controller
         }
 
         
-        // var specialties = await GetSpecialtiesSelectListAsync();
-        // ViewBag.Specialties = specialties;
+        model.Specialties = await GetSpecialtiesSelectListAsync();
+        model.Clinics = await GetClinicsSelectListAsync();
         return View(model);
     }
 
@@ -114,24 +139,27 @@ public class AdminController : Controller
         return View(doctors);
     }
 
-    public async Task<IActionResult> AddedDoctor(long id)
-    {
-        var doctor = await _context.Doctors
-            .Include(x => x.User)
-            .FirstOrDefaultAsync(x => x.ID == id);
-
-        if (doctor == null)
-        {
-            return NotFound();
-        }
-
-        var model = new DoctorAddedViewModel
-        {
-            DoctorId = doctor.ID,
-            FullName = $"{doctor.FirstName} {doctor.FamilyName}",
-            PersonalNumber = doctor.User.PersonalNumber
-        };
-
-        return View(model);
-    }
+    // [HttpGet]
+    // public async Task<IActionResult> AddedDoctor(long id)
+    // {
+    //     var doctor = await _context.Doctors
+    //         .Include(x => x.User)
+    //         .FirstOrDefaultAsync(x => x.ID == id);
+    //
+    //     if (doctor == null)
+    //     {
+    //         return NotFound();
+    //     }
+    //     
+    //     var personalNumber = BCrypt.Net.BCrypt.Verify(doctor.User.PersonalNumber);
+    //
+    //     var model = new DoctorAddedViewModel()
+    //     {
+    //         DoctorId = doctor.ID,
+    //         FullName = $"{doctor.FirstName} {doctor.FamilyName}",
+    //         PersonalNumber = doctor.User.PersonalNumber
+    //     };
+    //
+    //     return View(model);
+    // }
 }
