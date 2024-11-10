@@ -127,7 +127,6 @@ public class AdminService
                 
                     specialty = new Specialty
                     {
-                        ClinicId = clinic.Id,
                         NameSpecialty = specialtyName.Trim(),
                         Description = specialtyDescription?.Trim()
                     };
@@ -140,6 +139,7 @@ public class AdminService
                 var doctor = new Doctor
                 {
                     UserId = user.Id,
+                    ClinicId = clinic.Id,
                     FirstName = firstName,
                     FamilyName = familyName,
                     SpecialtyID = specialty.Id

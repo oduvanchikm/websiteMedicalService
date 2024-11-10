@@ -26,6 +26,10 @@ public class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
             .HasForeignKey(d => d.SpecialtyID)
             .OnDelete(DeleteBehavior.Restrict);
         
+        builder.HasOne(x => x.Clinic)
+            .WithOne(x => x.Doctor)
+            .HasForeignKey<Doctor>(x => x.ClinicId);
+        
         builder.HasMany(x => x.AppointmentSlots)
             .WithOne(x => x.Doctor)
             .HasForeignKey(x => x.DoctorId);

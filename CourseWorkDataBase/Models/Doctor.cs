@@ -17,5 +17,8 @@ public class Doctor
     public User User { get; set; }
     public long UserId { get; set; }
     
+    public Clinic Clinic { get; set; }
+    public long? ClinicId { get; set; }
+    
     public List<AppointmentSlot> AppointmentSlots { get; set; }
 }

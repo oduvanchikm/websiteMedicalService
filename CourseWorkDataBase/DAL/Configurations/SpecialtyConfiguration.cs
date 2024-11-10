@@ -14,9 +14,5 @@ public class SpecialtyConfiguration : IEntityTypeConfiguration<Specialty>
             .IsRequired();
 
         builder.Property(x => x.Description);
-        
-        builder.HasOne(x => x.Clinic)
-            .WithOne(x => x.Specialty)
-            .HasForeignKey<Specialty>(x => x.ClinicId);
     }
 }
