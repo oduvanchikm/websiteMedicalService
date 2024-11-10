@@ -16,7 +16,7 @@ public class RegistrationService
 
     public async Task<Patient> RegisterPage(string email, string password, string firstName, string familyName, string gender)
     {
-        if (await _context.Users.AnyAsync(u => u.Email == email))
+        if (await _context.Users.AnyAsync(u => u.Email == email && u.RoleId == 3))
         {
             throw new ApplicationException("Email already exists.");
         }

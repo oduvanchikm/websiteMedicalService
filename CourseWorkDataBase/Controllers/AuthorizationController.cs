@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using CourseWorkDataBase.Data;
 using CourseWorkDataBase.Models;
+using CourseWorkDataBase.ViewModels;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace CourseWorkDataBase.Controllers;
 
@@ -16,7 +18,7 @@ public class AuthorizationController : Controller
     {
         _authService = authService;
     }
-    
+
     [HttpGet]
     public IActionResult AuthorizationPage()
     {
@@ -26,64 +28,66 @@ public class AuthorizationController : Controller
     [HttpPost]
     public async Task<IActionResult> AuthorizationPage(LoginUserRequest request)
     {
-        
         Console.Out.WriteLine(request.Email);
         Console.Out.WriteLine(request.Password);
-        
+
         if (!ModelState.IsValid)
         {
-            return BadRequest("Неверный запрос на вход.");
+            TempData["ErrorMessage"] = "Invalid login request.";
+            return RedirectToAction("AuthorizationPage", "Authorization");
         }
-        
+
         var user = await _authService.AuthenticateUser(request.Email, request.Password);
         if (user == null)
         {
-            return Unauthorized("Неверный адрес электронной почты или пароль.");
+            TempData["ErrorMessage"] = "Invalid email address or password.";
+            return RedirectToAction("AuthorizationPage", "Authorization");
         }
 
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, user.Email),
-            new Claim(ClaimTypes.Role, user.Role.Name) 
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
         };
 
-        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-        var authProperties = new AuthenticationProperties
+        if (user.Role != null)
         {
-            IsPersistent = true, 
-            ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1) 
-        };
+            Console.Out.WriteLine("ROLE NAME " + user.Role.Name);
+            claims.Add(new Claim(ClaimTypes.Role, user.Role.Name));
+            Console.Out.WriteLine("CLAIM ROLE " + ClaimTypes.Role);
+        }
 
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(claimsIdentity),
-            authProperties);
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
+        if (user.RoleId == 1)
+        {
+            return RedirectToAction("DoctorsList", "Admin");
+        }
+        
         return RedirectToAction("PatientPage", "Patient");
     }
-    
-    [HttpGet("AccessDenied")]
-    public IActionResult AccessDenied()
+
+    [HttpPost]
+    public async Task<IActionResult> LoginDoctor(LoginDoctorRequest request)
     {
-        return View();
+        if (!ModelState.IsValid)
+        {
+            TempData["ErrorMessage"] = "Invalid login request.";
+            return RedirectToAction("AuthorizationPage", "Authorization");
+        }
+
+        var user = await _authService.AuthenticateDoctor(request.Email, request.PersonalNumber);
+        if (user == null)
+        {
+            TempData["ErrorMessage"] = "Invalid personal number.";
+            return RedirectToAction("AuthorizationPage", "Authorization");
+        }
+
+        // if (user.RoleId == 2)
+        // {
+        return RedirectToAction("DoctorPage", "Doctor");
+        // }
     }
-
-
-    // [HttpPost]
-    // public async Task<IActionResult> LoginDoctor(LoginDoctorRequest request)
-    // {
-    //     if (!ModelState.IsValid)
-    //     {
-    //         return BadRequest("Invalid login request.");
-    //     }
-    //     
-    //     var user = await _authService.AuthenticateDoctor(request.PersonalNumber);
-    //     if (user == null)
-    //     {
-    //         return Unauthorized("Invalid personal number.");
-    //     }
-    //
-    //     return RedirectToAction("DoctorPage", "Doctor");
-    // }
 }

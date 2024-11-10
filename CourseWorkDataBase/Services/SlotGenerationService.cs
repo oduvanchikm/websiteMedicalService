@@ -41,7 +41,7 @@ public class SlotGenerationService : BackgroundService
         _logger.LogInformation("Служба генерации слотов остановлена.");
     }
 
-    private async Task GenerateSlotsAsync()
+    public async Task GenerateSlotsAsync()
     {
         using (var scope = _serviceProvider.CreateScope())
         {
@@ -51,5 +51,4 @@ public class SlotGenerationService : BackgroundService
 
         _logger.LogInformation("Слоты успешно сгенерированы.");
     }
-
 }

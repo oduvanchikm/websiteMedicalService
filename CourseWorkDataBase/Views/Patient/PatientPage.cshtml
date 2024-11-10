@@ -6,23 +6,23 @@
 }
 
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>@ViewData["Title"] - Медицинский Центр</title>
+    <title>@ViewData["Title"] - Medical Center</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container mt-5">
-    <h1 class="mb-4">Наши Врачи</h1>
+    <h1 class="mb-4">Our Doctors</h1>
 
     <table class="table table-striped">
         <thead>
         <tr>
-            <th>ФИО</th>
-            <th>Специализация</th>
-            <th>Опыт (лет)</th>
-            <th>Действия</th>
+            <th>Name</th>
+            <th>Surname</th>
+            <th>Specialty</th>
+            <th>Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -35,7 +35,7 @@
                     <td>@doctor.FamilyName</td>
                     <td>@doctor.Specialty.NameSpecialty</td>
                     <td>
-                        <a href="@Url.Action("ViewDoctor", "Patient", new { doctorId = doctor.ID })" class="btn btn-info btn-sm">Просмотр</a>
+                        <a href="@Url.Action("ViewDoctor", "Patient", new { doctorId = doctor.ID })" class="btn btn-info btn-sm">View</a>
                     </td>
                 </tr>
             }
@@ -43,7 +43,7 @@
         else
         {
             <tr>
-                <td colspan="4" class="text-center">Врачи не найдены.</td>
+                <td colspan="4" class="text-center">No doctors found.</td>
             </tr>
         }
         </tbody>

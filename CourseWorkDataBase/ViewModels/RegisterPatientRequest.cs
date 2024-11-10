@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CourseWorkDataBase.Models;
+namespace CourseWorkDataBase.ViewModels;
 
 public class RegisterPatientRequest
 {

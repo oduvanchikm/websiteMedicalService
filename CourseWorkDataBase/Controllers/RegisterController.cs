@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using CourseWorkDataBase.Models;
+using CourseWorkDataBase.ViewModels;
 using CourseWorkDataBase.Data;
 
 namespace CourseWorkDataBase.Controllers;

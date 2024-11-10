@@ -1,4 +1,4 @@
-namespace CourseWorkDataBase.Models;
+namespace CourseWorkDataBase.ViewModels;
 
 public class LoginDoctorRequest
 {

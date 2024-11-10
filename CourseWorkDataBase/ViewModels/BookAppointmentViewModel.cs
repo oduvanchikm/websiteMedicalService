@@ -1,4 +1,6 @@
-namespace CourseWorkDataBase.Models;
+using CourseWorkDataBase.Models;
+
+namespace CourseWorkDataBase.ViewModels;
 
 public class BookAppointmentViewModel
 {

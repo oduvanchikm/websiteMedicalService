@@ -1,5 +1,6 @@
 using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.Models;
+using CourseWorkDataBase.ViewModels;
 using CourseWorkDataBase.Helpers;
 using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
@@ -30,9 +31,9 @@ public class AdminService
             string? clinicPhoneNumber
             )
     {
-        if (await _context.Users.AnyAsync(x => x.Email == email))
+        if (await _context.Users.AnyAsync(x => x.Email == email && x.RoleId == 2))
         {
-            throw new ApplicationException("\nA user with this email already exists.");
+            throw new ApplicationException("A user with this email already exists.");
         }
         
         var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Doctor");
@@ -41,8 +42,9 @@ public class AdminService
             throw new ApplicationException("Role 'Doctor' not found.");
         }
 
-        // var personalNumber = GeneratePersonalNumber.GenerateRandomNumber();
-        // Console.Out.WriteLine(personalNumber);
+        var n = "20012005";
+        var m = BCrypt.Net.BCrypt.HashPassword(n);
+        Console.Out.WriteLine("20012005 PERSONAL NUMBER" + m);
         
         var hashedPersonalNumber = BCrypt.Net.BCrypt.HashPassword(personalNumber);
         Console.Out.WriteLine(hashedPersonalNumber);
@@ -63,8 +65,6 @@ public class AdminService
             {
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
-
-                Console.Out.WriteLine("ID USER AAAAAA" + user.Id);
                 
                 Clinic clinic;
                 if (clinicId.HasValue)
@@ -72,6 +72,7 @@ public class AdminService
                     clinic = await _context.Clinics.FindAsync(clinicId.Value);
                     if (clinic == null)
                     {
+                        Console.Out.WriteLine("CLINIC  not found.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         throw new ApplicationException("Clinic not found.");
                     }
                 }
@@ -108,6 +109,7 @@ public class AdminService
                     specialty = await _context.Specialties.FindAsync(specialtyId.Value);
                     if (specialty == null)
                     {
+                        Console.Out.WriteLine("Special ty not found.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         throw new ApplicationException("Specialization not found.");
                     }
                 }
@@ -147,6 +149,7 @@ public class AdminService
 
                 _context.Doctors.Add(doctor);
                 await _context.SaveChangesAsync();
+                // Console.Out.WriteLine("A new specialization has created with ID: " + specialty.Id);
                 await transaction.CommitAsync();
                 return doctor;
             }
@@ -160,6 +163,11 @@ public class AdminService
 
     public async Task<List<Doctor>> GetAllDoctorsAsync()
     {
-        return await _context.Doctors.Include(d => d.User).ToListAsync();
+        var doctors = await _context.Doctors
+            .Include(d => d.Specialty)
+            .Include(d => d.Clinic)
+            .ToListAsync();
+    
+        return doctors;
     }
 }

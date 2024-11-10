@@ -21,8 +21,13 @@ public class AuthorizationService
         var user = await _context.Users
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Email == email);
-
         if (user == null)
+        {
+            return null;
+        }
+
+        // TODO
+        if (user.RoleId == 2)
         {
             return null;
         }
@@ -36,7 +41,7 @@ public class AuthorizationService
         }
         catch (SaltParseException ex)
         {
-            Console.WriteLine($"Error parsing salt: {ex.Message}");
+            Console.WriteLine($"Error parsing salt in Patient/Admin: {ex.Message}");
             return null;
         }
 
@@ -44,23 +49,37 @@ public class AuthorizationService
         {
             return null;
         }
-
-
+        
         return user;
     }
 
-    public async Task<User> AuthenticateDoctor(string personalNumber)
+    public async Task<User> AuthenticateDoctor(string email, string personalNumber)
     {
         var doctor = await _context.Users
             .Include(u => u.Role)
-            .FirstOrDefaultAsync(u => u.PersonalNumber == personalNumber && u.Role.Name == "Doctor");
-
+            .FirstOrDefaultAsync(u => u.Email == email && u.Role.Name == "Doctor");
         if (doctor == null)
         {
             return null;
         }
 
-        bool isPasswordValid = BCrypt.Net.BCrypt.Verify(personalNumber, doctor.PersonalNumber);
+        // TODO 
+        if (doctor.RoleId != 2)
+        {
+            return null;
+        }
+
+        bool isPasswordValid;
+        
+        try
+        {
+            isPasswordValid = BCrypt.Net.BCrypt.Verify(personalNumber, doctor.PersonalNumber);
+        }
+        catch (SaltParseException ex)
+        {
+            Console.WriteLine($"Error parsing salt in Doctor: {ex.Message}");
+            return null;
+        }
 
         if (!isPasswordValid)
         {

@@ -1,20 +1,20 @@
-@using CourseWorkDataBase.Models
-@model BookAppointmentViewModel
+@using System.Globalization;
+@model CourseWorkDataBase.ViewModels.BookAppointmentViewModel
 
 @{
     ViewData["Title"] = "Детали Врача";
 }
 
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>@ViewData["Title"] - Медицинский Центр</title>
+    <title>@ViewData["Title"] - Medical Center</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container mt-5">
-    <a href="@Url.Action("PatientPage", "Patient")" class="btn btn-secondary mb-4">Назад к списку врачей</a>
+    <a href="@Url.Action("PatientPage", "Patient")" class="btn btn-secondary mb-4">Back to list of Doctors</a>
 
     <div class="card mb-4">
         <div class="card-header">
@@ -22,45 +22,86 @@
         </div>
         <div class="card-body">
             <p>
-                <strong>Специализация:</strong> @Model.Doctor.Specialty.NameSpecialty
+                <strong>Specialty:</strong> @Model.Doctor.Specialty.NameSpecialty
             </p>
         </div>
     </div>
 
-    <h3>Доступные Временные Слоты</h3>
+    <h3>Available Time Slots</h3>
+
     @if (Model.AvailableSlots != null && Model.AvailableSlots.Any())
     {
-        <table class="table table-bordered">
-            <thead>
-            <tr>
-                <th>Дата и Время</th>
-                <th>Действия</th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (var slot in Model.AvailableSlots)
-            {
-                <tr>
-                    <td>@slot.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
-                    <td>
-                        <form asp-action="BookAppointment" method="post" class="d-inline">
-                            <input type="hidden" name="slotId" value="@slot.Id"/>
-                            <button type="submit" class="btn btn-primary btn-sm"
-                                    onclick="return confirm('Вы уверены, что хотите записаться на этот слот?');">
-                                Записаться
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            }
-            </tbody>
-        </table>
+        var slotsByDate = Model.AvailableSlots
+            .GroupBy(s => s.StartTime.Date)
+            .OrderBy(g => g.Key);
+
+        foreach (var dateGroup in slotsByDate)
+        {
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <strong>@dateGroup.Key.ToString("dddd, dd MMMM yyyy")</strong>
+                </div>
+                <div class="card-body">
+                    @if (dateGroup.Any())
+                    {
+                        <div class="row">
+                            @foreach (var slot in dateGroup.OrderBy(s => s.StartTime))
+                            {
+                                <div class="col-md-3 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body d-flex flex-column justify-content-between">
+                                            <div>
+                                                <p class="card-text">
+                                                    <strong>Time:</strong> @slot.StartTime.ToString("HH:mm") - @slot.EndTime.ToString("HH:mm")
+                                                </p>
+                                                @if (!string.IsNullOrEmpty(slot.Doctor.FirstName))
+                                                {
+                                                    <p class="card-text">
+                                                        <strong>Doctor:</strong> @slot.Doctor.FirstName
+                                                    </p>
+                                                }
+                                            </div>
+                                            <div>
+                                                <form action="@Url.Action("BookAppointment", "Patient")" method="post" class="d-inline">
+                                                    <input type="hidden" name="slotId" value="@slot.Id"/>
+                                                    <button type="submit" class="btn btn-success btn-sm btn-block"
+                                                            onclick="return confirm('Are you sure you want to sign up for this slot?');">
+                                                        Sign Up
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No slots available on this date.</p>
+                    }
+                </div>
+            </div>
+        }
     }
     else
     {
-        <p>Нет доступных слотов на данный момент.</p>
+        <div class="alert alert-info" role="alert">
+            There are no slots available at the moment.
+        </div>
     }
+
 </div>
+
+<style>
+    .card-header {
+        text-align: center;
+        font-size: 1.25rem;
+    }
+    .btn-block {
+        width: 100%;
+    }
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

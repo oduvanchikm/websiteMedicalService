@@ -6,8 +6,6 @@ using CourseWorkDataBase.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -22,13 +20,19 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(1);
     });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("Doctor", policy => policy.RequireRole("Doctor"));
+    options.AddPolicy("Patient", policy => policy.RequireRole("Patient"));
+});
+
+
 builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<RegistrationService>();
 builder.Services.AddScoped<AuthorizationService>();
 builder.Services.AddScoped<SlotInitializer>();
-
 builder.Services.AddHostedService<SlotGenerationService>();
-
 
 builder.Services.AddControllersWithViews();
 
@@ -102,15 +106,11 @@ app.MapControllerRoute(
     pattern: "{controller=Patient}/{action=PatientPage}/{id?}");
 
 app.MapControllerRoute(
-    name: "admin",
+    name: "admin/add",
     pattern: "{controller=Admin}/{action=AddDoctor}/{id?}");
 
 app.MapControllerRoute(
     name: "admin",
-    pattern: "{controller=Admin}/{action=AddDoctor}/{id?}");
-
-app.MapControllerRoute(
-    name: "admin/added",
-    pattern: "{controller=Admin}/{action=AddedDoctor}/{id?}");
+    pattern: "{controller=Admin}/{action=DoctorsList}/{id?}");
 
 app.Run();

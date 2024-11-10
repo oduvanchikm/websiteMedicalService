@@ -1,15 +1,15 @@
-@model CourseWorkDataBase.Models.RegisterPatientRequest
+@model CourseWorkDataBase.ViewModels.RegisterPatientRequest
 
 @{
     ViewData["Title"] = "Register";
 }
 
 <!DOCTYPE html>
-<html lang="ru" xmlns="http://www.w3.org/1999/html">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация пациента</title>
+    <title>User registration</title>
     <style>
         * {
             box-sizing: border-box;
@@ -119,20 +119,21 @@
 </head>
 <body>
 <form action="/register" method="POST">
-    <h2>Регистрация пациента</h2>
-    <input type="text" name="firstName" placeholder="Имя" required>
-    <input type="text" name="familyName" placeholder="Фамилия" required>
-    <input type="email" name="email" placeholder="Электронная почта" required>
-    <input type="password" name="password" placeholder="Пароль" required>
+    <h2>User registration</h2>
+    <input type="text" name="firstName" placeholder="Name" required>
+    <input type="text" name="familyName" placeholder="Surname" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
     <select name="gender" required>
-        <option value="">Выберите пол</option>
-        <option value="Male">Мужской</option>
-        <option value="Female">Женский</option>
+        <option value="">Please select gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
     </select>
-    <button type="submit">Зарегистрироваться</button>
+    <button type="submit">Register</button>
     <div class="additional-options">
-        <span>Уже есть аккаунт?</span>
-        <a href="@Url.Action("AuthorizationPage", "Authorization")">Войти</a>
+        <span>Already have an account?</span>
+        <a href="@Url.Action("AuthorizationPage", "Authorization")" class="btn">Login</a>
+        @* <a href="@Url.Action("AuthorizationPage", "Authorization")">Login</a> *@
     </div>
 </form>
 </body>

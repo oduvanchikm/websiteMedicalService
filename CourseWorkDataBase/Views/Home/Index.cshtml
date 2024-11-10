@@ -6,7 +6,7 @@ ViewData["Title"] = "Добро пожаловать";
 <html lang="ru">
 <head>
     <meta charset="utf-8"/>
-    <title>@ViewData["Title"] - Медицинская платформа</title>
+    <title>@ViewData["Title"] - Medical platform</title>
     <link rel="stylesheet" href="~/css/index.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -136,14 +136,17 @@ ViewData["Title"] = "Добро пожаловать";
 <body>
 
 <div class="welcome-container">
-    <h1><i class="fas fa-user-md"></i> Добро пожаловать на сайт!</h1>
-    <p>Пожалуйста, выберите действие:</p>
+    <h1><i class="fas fa-user-md"></i> Welcome to the site!</h1>
+    <p>Please choose an action</p>
     <div class="button-group">
         <a class="btn btn-primary" href="@Url.Action("RegisterPage", "Register")">
-            <i class="fas fa-user-plus icon"></i> Регистрация
+            <i class="fas fa-user-plus icon"></i> Register
         </a>
         <a class="btn btn-secondary" href="@Url.Action("AuthorizationPage", "Authorization")">
-            <i class="fas fa-sign-in-alt icon"></i> Вход
+            <i class="fas fa-sign-in-alt icon"></i> Login
+        </a>
+        <a class="btn btn-secondary" href="@Url.Action("InformationDoctors", "Information")">
+            <i class="fas fa-sign-in-alt icon"></i> View Information About Doctors
         </a>
     </div>
 </div>

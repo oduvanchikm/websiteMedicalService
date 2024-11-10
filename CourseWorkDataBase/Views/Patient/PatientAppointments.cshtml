@@ -1,0 +1,23 @@
+@model IEnumerable<CourseWorkDataBase.Models.Appointment>
+
+<h2>Your Appointments</h2>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Date and Time</th>
+        <th>Doctor</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var appointment in Model)
+    {
+        <tr>
+            <td>@appointment.AppointmentSlot.StartTime.ToLocalTime().ToString("f")</td>
+            <td>@appointment.AppointmentSlot.Doctor.FirstName + @appointment.AppointmentSlot.Doctor.FamilyName</td>
+            <td>@appointment.Status.Name</td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -15,14 +15,14 @@ public class SlotInitializer
 
     public async Task InitializeSlotAsync()
     {
-        var doctors = _context.Doctors
+        var doctors = await _context.Doctors
             .Include(d => d.AppointmentSlots)
-            .ToList();
+            .ToListAsync();
 
         foreach (var doctor in doctors)
         {
             var startDate = DateTime.UtcNow.Date;
-            var endDate = DateTime.UtcNow.Date.AddDays(30);
+            var endDate = DateTime.UtcNow.Date.AddDays(14);
 
             for (var date = startDate; date <= endDate; date = date.AddDays(1))
             {
@@ -31,12 +31,22 @@ public class SlotInitializer
                     continue;
                 }
 
-                var slotStartTime = DateTime.SpecifyKind(date.AddHours(9), DateTimeKind.Utc);
-                var slotEndTime = DateTime.SpecifyKind(date.AddHours(16), DateTimeKind.Utc);
-                var currentTime = slotStartTime;
+                var workStartTime = DateTime.SpecifyKind(date.AddHours(9), DateTimeKind.Utc);
+                var workEndTime = DateTime.SpecifyKind(date.AddHours(16), DateTimeKind.Utc);
 
-                while (currentTime.AddMinutes(45) <= slotEndTime)
+                var breakStartTime = DateTime.SpecifyKind(date.AddHours(13), DateTimeKind.Utc); 
+                var breakEndTime = DateTime.SpecifyKind(date.AddHours(14), DateTimeKind.Utc); 
+
+                var currentTime = workStartTime;
+
+                while (currentTime.AddMinutes(45) <= workEndTime)
                 {
+                    if (currentTime >= breakStartTime && currentTime < breakEndTime)
+                    {
+                        currentTime = breakEndTime;
+                        continue;
+                    }
+
                     var existingSlot = doctor.AppointmentSlots
                         .FirstOrDefault(s => s.StartTime == currentTime);
 
