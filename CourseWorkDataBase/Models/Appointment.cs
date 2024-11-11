@@ -13,7 +13,7 @@ public class Appointment
     public AppointmentSlot AppointmentSlot { get; set; }
     public long AppointmentSlotId { get; set; }
     
-    public DateTime Date { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset Date { get; set; } = DateTime.UtcNow;
 
     public Status Status { get; set; }
     public long StatusId { get; set; }

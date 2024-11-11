@@ -1,18 +1,20 @@
 using CourseWorkDataBase.DAL.Configurations;
 using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.DAL;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<User, Role, long>
 {
     public ApplicationDbContext(DbContextOptions options)
         : base(options)
     {
     }
 
-    public DbSet<User> Users { get; set; }
-    public DbSet<Role> Roles { get; set; }
+    // public DbSet<User> Users { get; set; }
+    // public DbSet<Role> Roles { get; set; }
     public DbSet<Patient> Patients { get; set; }
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<Specialty> Specialties { get; set; }

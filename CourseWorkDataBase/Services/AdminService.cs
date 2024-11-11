@@ -31,7 +31,7 @@ public class AdminService
             string? clinicPhoneNumber
             )
     {
-        if (await _context.Users.AnyAsync(x => x.Email == email && x.RoleId == 2))
+        if (await _context.Users.AnyAsync(x => x.Email == email && x.Id == 2))
         {
             throw new ApplicationException("A user with this email already exists.");
         }

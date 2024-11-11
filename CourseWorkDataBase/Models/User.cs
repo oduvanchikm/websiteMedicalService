@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Data.Common;
+using Microsoft.AspNetCore.Identity;
 
 namespace CourseWorkDataBase.Models;
 
-public class User
+public class User : IdentityUser<long>
 {
     public long Id { get; set; }
     
@@ -16,7 +18,7 @@ public class User
     public Role Role { get; set; }
     public long RoleId { get; set; }
     
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTime.UtcNow;
     
     public Patient? Patient { get; set; }
     

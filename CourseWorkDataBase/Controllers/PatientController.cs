@@ -146,9 +146,7 @@ public class PatientController : Controller
     
         return View(appointments);
     }
-
-
-    // Просмотр медицинской карты
+    
     // public async Task<IActionResult> MedicalRecord(long appointmentId)
     // {
     //     var record = await _context.
@@ -165,5 +163,4 @@ public class PatientController : Controller
     //
     //     return View(record);
     // }
-
 }

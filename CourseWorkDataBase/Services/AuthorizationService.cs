@@ -26,12 +26,6 @@ public class AuthorizationService
             return null;
         }
 
-        // TODO
-        if (user.RoleId == 2)
-        {
-            return null;
-        }
-
         Console.WriteLine($"Stored Password Hash: {user.Password}");
 
         bool isPasswordValid;
@@ -47,6 +41,7 @@ public class AuthorizationService
 
         if (!isPasswordValid)
         {
+            Console.Out.WriteLine("Invalid Password");
             return null;
         }
         
@@ -62,13 +57,13 @@ public class AuthorizationService
         {
             return null;
         }
-
+        
         // TODO 
         if (doctor.RoleId != 2)
         {
             return null;
         }
-
+        
         bool isPasswordValid;
         
         try

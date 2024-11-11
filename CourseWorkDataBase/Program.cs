@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.Data;
+using Microsoft.AspNetCore.Identity;
 using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.Helpers;
+using CourseWorkDataBase.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,13 +22,16 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(1);
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("Doctor", policy => policy.RequireRole("Doctor"));
-    options.AddPolicy("Patient", policy => policy.RequireRole("Patient"));
-});
+builder.Services.AddIdentity<User, Role>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
+// builder.Services.AddAuthorization(options =>
+// {
+//     options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+//     options.AddPolicy("Doctor", policy => policy.RequireRole("Doctor"));
+//     options.AddPolicy("Patient", policy => policy.RequireRole("Patient"));
+// });
 
 builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<RegistrationService>();
@@ -35,6 +40,7 @@ builder.Services.AddScoped<SlotInitializer>();
 builder.Services.AddHostedService<SlotGenerationService>();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
