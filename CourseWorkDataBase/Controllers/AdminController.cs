@@ -3,14 +3,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using CourseWorkDataBase.Data;
 using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.ViewModels;
-using CourseWorkDataBase.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Controllers;
 
-// [Authorize(Roles = "Admin")]
-// [Authorize(Policy = "Admin")]
 public class AdminController : Controller
 {
     private readonly AdminService _adminService;
