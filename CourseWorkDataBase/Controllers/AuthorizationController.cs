@@ -43,51 +43,44 @@ public class AuthorizationController : Controller
             TempData["ErrorMessage"] = "Invalid email address or password.";
             return RedirectToAction("AuthorizationPage", "Authorization");
         }
-
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.Email),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-        };
-
-        if (user.Role != null)
-        {
-            Console.Out.WriteLine("ROLE NAME " + user.Role.Name);
-            claims.Add(new Claim(ClaimTypes.Role, user.Role.Name));
-            Console.Out.WriteLine("CLAIM ROLE " + ClaimTypes.Role);
-        }
-
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
+        
         if (user.RoleId == 1)
         {
             return RedirectToAction("DoctorsList", "Admin");
         }
+        else if (user.RoleId == 2)
+        {
+            return RedirectToAction("DoctorPage", "Doctor");
+        }
+        else if (user.RoleId == 3)
+        {
+            return RedirectToAction("PatientPage", "Patient");
+        }
         
-        return RedirectToAction("PatientPage", "Patient");
+        return RedirectToAction("AuthorizationPage", "Authorization");
     }
 
-    [HttpPost]
-    public async Task<IActionResult> LoginDoctor(LoginDoctorRequest request)
-    {
-        if (!ModelState.IsValid)
-        {
-            TempData["ErrorMessage"] = "Invalid login request.";
-            return RedirectToAction("AuthorizationPage", "Authorization");
-        }
-
-        var user = await _authService.AuthenticateDoctor(request.Email, request.PersonalNumber);
-        if (user == null)
-        {
-            TempData["ErrorMessage"] = "Invalid personal number.";
-            return RedirectToAction("AuthorizationPage", "Authorization");
-        }
-
-        // if (user.RoleId == 2)
-        // {
-        return RedirectToAction("DoctorPage", "Doctor");
-        // }
-    }
+    // [HttpPost]
+    // public async Task<IActionResult> LoginDoctor(LoginDoctorRequest request)
+    // {
+    //     if (!ModelState.IsValid)
+    //     {
+    //         TempData["ErrorMessage"] = "Invalid login request.";
+    //         return RedirectToAction("AuthorizationPage", "Authorization");
+    //     }
+    //
+    //     var user = await _authService.AuthenticateDoctor(request.Email, request.PersonalNumber);
+    //     if (user == null)
+    //     {
+    //         TempData["ErrorMessage"] = "Invalid personal number.";
+    //         return RedirectToAction("AuthorizationPage", "Authorization");
+    //     }
+    //
+    //     if (user.RoleId == 2)
+    //     {
+    //         return RedirectToAction("DoctorPage", "Doctor");
+    //     }
+    //     
+    //     return 
+    // }
 }

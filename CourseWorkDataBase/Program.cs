@@ -11,27 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Account/AccessDenied";
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        options.Cookie.SameSite = SameSiteMode.Strict;
-        options.ExpireTimeSpan = TimeSpan.FromHours(1);
-    });
-
-builder.Services.AddIdentity<User, Role>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
-
-// builder.Services.AddAuthorization(options =>
-// {
-//     options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
-//     options.AddPolicy("Doctor", policy => policy.RequireRole("Doctor"));
-//     options.AddPolicy("Patient", policy => policy.RequireRole("Patient"));
-// });
+// builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+//     .AddCookie(options =>
+//     {
+//         options.LoginPath = "/Account/Login";
+//         options.AccessDeniedPath = "/Account/AccessDenied";
+//         options.Cookie.HttpOnly = true;
+//         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+//         options.Cookie.SameSite = SameSiteMode.Strict;
+//         options.ExpireTimeSpan = TimeSpan.FromHours(1);
+//     });
 
 builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<RegistrationService>();
@@ -42,37 +31,33 @@ builder.Services.AddHostedService<SlotGenerationService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Authorization/Login";
+    options.LogoutPath = "/Authorization/Logout";
+    options.AccessDeniedPath = "/Authorization/AccessDenied";
+});
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var logger = services.GetRequiredService<ILogger<Program>>();
+
     try
     {
         var initializer = services.GetRequiredService<SlotInitializer>();
         await initializer.InitializeSlotAsync();
         logger.LogInformation("Слоты успешно инициализированы.");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Произошла ошибка при инициализации слотов.");
-        throw;
-    }
-}
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
-    try
-    {
         var context = services.GetRequiredService<ApplicationDbContext>();
+        await context.Database.MigrateAsync();
         logger.LogInformation("Применение миграций прошло успешно.");
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "Произошла ошибка при инициализации базы данных.");
+        logger.LogError(ex, "Произошла ошибка при инициализации слотов или базы данных.");
         throw;
     }
 }

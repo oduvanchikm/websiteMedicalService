@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace CourseWorkDataBase.Models;
 
-public class User : IdentityUser<long>
+public class User
 {
     public long Id { get; set; }
     

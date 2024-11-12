@@ -1,5 +1,5 @@
 @{
-ViewData["Title"] = "Authorization";
+    ViewData["Title"] = "Authorization";
 }
 
 <!DOCTYPE html>
@@ -141,12 +141,9 @@ ViewData["Title"] = "Authorization";
     </style>
 </head>
 <body>
-<div class="form-container">
-    <div class="tabs">
-        <div class="tab active" id="user-tab">User</div>
-        <div class="tab" id="doctor-tab">Врач</div>
-    </div>
 
+
+<div class="form-container">
     <div class="error-message" id="error-message" style="display: none; color: red; border: 1px solid red; padding: 10px; margin-top: 10px;"></div>
 
     <form id="user-form" action="@Url.Action("AuthorizationPage", "Authorization")" method="POST" class="form active">
@@ -156,49 +153,72 @@ ViewData["Title"] = "Authorization";
         <button type="submit">Login</button>
     </form>
 
-    <form id="doctor-form" action="@Url.Action("LoginDoctor", "Authorization")" method="POST" class="form">
-        <h2>Doctor login</h2>
-        <input type="text" id="doctor-email" name="Email" placeholder="Email" required>
-        <input type="text" id="doctor-personal-number" name="PersonalNumber" placeholder="Personal Number" required>
-        <button type="submit">Login</button>
-    </form>
-
     <div class="additional-options">
         <span>Don't have an account?</span>
         <div class="text-center">
             <a href="@Url.Action("RegisterPage", "Register")" class="btn">Register</a>
         </div>
-        @* <a href="@Url.Action("RegisterPage", "Register")">Register</a> *@
     </div>
 </div>
 
-<script>
-    const userTab = document.getElementById('user-tab');
-    const doctorTab = document.getElementById('doctor-tab');
-    const userForm = document.getElementById('user-form');
-    const doctorForm = document.getElementById('doctor-form');
-    const errorMessage = document.getElementById('error-message');
 
-    const errorMsg = '@TempData["ErrorMessage"]';
-    if (errorMsg) {
-        errorMessage.textContent = errorMsg;
-        errorMessage.style.display = 'block';
-    }
-
-    userTab.addEventListener('click', () => {
-        userTab.classList.add('active');
-        doctorTab.classList.remove('active');
-        userForm.classList.add('active');
-        doctorForm.classList.remove('active');
-    });
-
-    doctorTab.addEventListener('click', () => {
-        doctorTab.classList.add('active');
-        userTab.classList.remove('active');
-        doctorForm.classList.add('active');
-        userForm.classList.remove('active');
-    });
-</script>
+@* <div class="form-container"> *@
+@*     <div class="tabs"> *@
+@*         <div class="tab active" id="user-tab">User</div> *@
+@*         <div class="tab" id="doctor-tab">Врач</div> *@
+@*     </div> *@
+@* *@
+@*     <div class="error-message" id="error-message" style="display: none; color: red; border: 1px solid red; padding: 10px; margin-top: 10px;"></div> *@
+@* *@
+@*     <form id="user-form" action="@Url.Action("AuthorizationPage", "Authorization")" method="POST" class="form active"> *@
+@*         <h2>User login</h2> *@
+@*         <input type="email" id="user-email" name="Email" placeholder="Email" required> *@
+@*         <input type="password" id="user-password" name="Password" placeholder="Password" required> *@
+@*         <button type="submit">Login</button> *@
+@*     </form> *@
+@* *@
+@*     <form id="doctor-form" action="@Url.Action("LoginDoctor", "Authorization")" method="POST" class="form"> *@
+@*         <h2>Doctor login</h2> *@
+@*         <input type="text" id="doctor-email" name="Email" placeholder="Email" required> *@
+@*         <input type="text" id="doctor-personal-number" name="PersonalNumber" placeholder="Personal Number" required> *@
+@*         <button type="submit">Login</button> *@
+@*     </form> *@
+@* *@
+@*     <div class="additional-options"> *@
+@*         <span>Don't have an account?</span> *@
+@*         <div class="text-center"> *@
+@*             <a href="@Url.Action("RegisterPage", "Register")" class="btn">Register</a> *@
+@*         </div> *@
+@*     </div> *@
+@* </div> *@
+@* *@
+@* <script> *@
+@*     const userTab = document.getElementById('user-tab'); *@
+@*     const doctorTab = document.getElementById('doctor-tab'); *@
+@*     const userForm = document.getElementById('user-form'); *@
+@*     const doctorForm = document.getElementById('doctor-form'); *@
+@*     const errorMessage = document.getElementById('error-message'); *@
+@* *@
+@*     const errorMsg = '@TempData["ErrorMessage"]'; *@
+@*     if (errorMsg) { *@
+@*         errorMessage.textContent = errorMsg; *@
+@*         errorMessage.style.display = 'block'; *@
+@*     } *@
+@* *@
+@*     userTab.addEventListener('click', () => { *@
+@*         userTab.classList.add('active'); *@
+@*         doctorTab.classList.remove('active'); *@
+@*         userForm.classList.add('active'); *@
+@*         doctorForm.classList.remove('active'); *@
+@*     }); *@
+@* *@
+@*     doctorTab.addEventListener('click', () => { *@
+@*         doctorTab.classList.add('active'); *@
+@*         userTab.classList.remove('active'); *@
+@*         doctorForm.classList.add('active'); *@
+@*         userForm.classList.remove('active'); *@
+@*     }); *@
+@* </script> *@
 
 </body>
 </html>

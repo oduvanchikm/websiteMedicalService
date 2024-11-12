@@ -6,15 +6,15 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.DAL;
 
-public class ApplicationDbContext : IdentityDbContext<User, Role, long>
+public class ApplicationDbContext : DbContext
 {
-    public ApplicationDbContext(DbContextOptions options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
 
-    // public DbSet<User> Users { get; set; }
-    // public DbSet<Role> Roles { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Role> Roles { get; set; }
     public DbSet<Patient> Patients { get; set; }
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<Specialty> Specialties { get; set; }

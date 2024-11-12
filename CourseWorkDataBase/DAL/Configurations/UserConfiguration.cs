@@ -26,7 +26,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasOne(x => x.Role)
             .WithMany(r => r.User)
             .HasForeignKey(x => x.RoleId)
-            .IsRequired();
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Restrict);
         
         builder.HasOne(x => x.Patient)
             .WithOne(p => p.User)
@@ -37,5 +38,21 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(d => d.User)
             .HasForeignKey<Doctor>(d => d.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        var fixedCreatedAt = new DateTime(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        builder.HasData(
+            new User() 
+            { 
+                Id = 1, 
+                Email = "admin@example.com",
+                Password = "$2a$11$o.sTnyjh8Mr9ArOWpr5Q..rsRPFHJ7EJ6pIeFUyVEfP2fe5b1riHm", 
+                RoleId = 1, 
+                CreatedAt = fixedCreatedAt,
+                Patient = null,
+                Doctor = null
+            }
+        );
+
     }
 }

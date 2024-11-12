@@ -22,7 +22,7 @@ public class SlotGenerationService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Служба генерации слотов запущена.");
+        _logger.LogInformation("The slot generation service is running.");
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -32,13 +32,13 @@ public class SlotGenerationService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при генерации слотов.");
+                _logger.LogError(ex, "An error occurred when generating slots.");
             }
 
             await Task.Delay(_delay, stoppingToken);
         }
 
-        _logger.LogInformation("Служба генерации слотов остановлена.");
+        _logger.LogInformation("The slot generation service has been stopped.");
     }
 
     public async Task GenerateSlotsAsync()
@@ -49,6 +49,6 @@ public class SlotGenerationService : BackgroundService
             await initializer.InitializeSlotAsync();
         }
 
-        _logger.LogInformation("Слоты успешно сгенерированы.");
+        _logger.LogInformation("Slots have been successfully generated.");
     }
 }

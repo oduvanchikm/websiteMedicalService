@@ -51,77 +51,73 @@ public class PatientController : Controller
 
         return View(viewModel);
     }
-    
+
     [HttpPost]
     public async Task<IActionResult> BookAppointment(long slotId)
     {
         Console.Out.WriteLine("BookAppointment1");
+
+        if (!User.Identity.IsAuthenticated)
+        {
+            return RedirectToAction("AuthorizationPage", "Authorization");
+        }
+
+        var username = User.Identity.Name;
+        if (string.IsNullOrEmpty(username))
+        {
+            return RedirectToAction("AuthorizationPage", "Authorization");
+        }
+
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == username);
+        if (user == null)
+        {
+            return RedirectToAction("AuthorizationPage", "Authorization");
+        }
+
+        long userId = user.Id;
+
+
+        var slot = await _context.AppointmentSlots
+            .Include(s => s.Doctor)
+            .FirstOrDefaultAsync(s => s.Id == slotId);
+
+        if (slot == null || slot.IsBooked)
+        {
+            Console.Out.WriteLine("BookAppointment4");
+            return RedirectToAction("PatientPage", "Patient");
+        }
+
+        Console.Out.WriteLine("BookAppointment5");
+
+        var appointment = new Appointment
+        {
+            AppointmentSlotId = slot.Id,
+            PatientId = userId,
+            Date = DateTime.UtcNow,
+            StatusId = 1
+        };
+        Console.Out.WriteLine("BookAppointment6");
+
+        slot.IsBooked = true;
+        Console.Out.WriteLine("BookAppointment7");
+
+        _context.Appointments.Add(appointment);
+        Console.Out.WriteLine("BookAppointment8");
+        _context.Entry(slot).State = EntityState.Modified;
+        Console.Out.WriteLine("BookAppointment9");
+
         try
         {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("AuthorizationPage", "Authorization");
-            }
-            Console.Out.WriteLine("BookAppointment2");
-            
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
-            if (userIdClaim == null)
-            {
-                return RedirectToAction("AuthorizationPage", "Authorization");
-            }
-            Console.Out.WriteLine("BookAppointment3");
-
-            if (!long.TryParse(userIdClaim.Value, out long userId))
-            {
-                return RedirectToAction("AuthorizationPage", "Authorization");
-            }
-            Console.Out.WriteLine("BookAppointment4");
-        
-            var slot = await _context.AppointmentSlots
-                .Include(s => s.Doctor)
-                .FirstOrDefaultAsync(s => s.Id == slotId);
-    
-            if (slot == null || slot.IsBooked)
-            {
-                Console.Out.WriteLine("BookAppointment4");
-                return RedirectToAction("PatientPage", "Patient");
-            }
-            Console.Out.WriteLine("BookAppointment5");
-    
-            var appointment = new Appointment
-            {
-                AppointmentSlotId = slot.Id,
-                PatientId = userId,
-                Date = DateTime.UtcNow,
-                StatusId = 1
-            };
-            Console.Out.WriteLine("BookAppointment6");
-    
-            slot.IsBooked = true; 
-            Console.Out.WriteLine("BookAppointment7");
-    
-            _context.Appointments.Add(appointment);
-            Console.Out.WriteLine("BookAppointment8");
-            _context.Entry(slot).State = EntityState.Modified;
-            Console.Out.WriteLine("BookAppointment9");
-        
-            try
-            {
-                Console.Out.WriteLine("BookAppointment10");
-                await _context.SaveChangesAsync();
-                Console.Out.WriteLine("BookAppointment11");
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                TempData["ErrorMessage"] = "There was an error with your booking. Try again.";
-                return RedirectToAction("PatientPage", "Patient");
-            }
+            Console.Out.WriteLine("BookAppointment10");
+            await _context.SaveChangesAsync();
+            Console.Out.WriteLine("BookAppointment11");
         }
-        catch (Exception e)
+        catch (DbUpdateConcurrencyException)
         {
-            Console.Out.WriteLine(e);
-            throw;
+            TempData["ErrorMessage"] = "There was an error with your booking. Try again.";
+            return RedirectToAction("PatientPage", "Patient");
         }
+
         Console.Out.WriteLine("BookAppointment12");
         return RedirectToAction("PatientAppointments", "Patient");
     }
@@ -136,17 +132,17 @@ public class PatientController : Controller
         {
             return NotFound();
         }
-        
+
         var appointments = await _context.Appointments
             .Include(a => a.AppointmentSlot)
             .ThenInclude(s => s.Doctor)
             .Where(a => a.PatientId == user.Id)
-            .OrderBy(a => a.AppointmentSlot.StartTime) 
+            .OrderBy(a => a.AppointmentSlot.StartTime)
             .ToListAsync();
-    
+
         return View(appointments);
     }
-    
+
     // public async Task<IActionResult> MedicalRecord(long appointmentId)
     // {
     //     var record = await _context.
