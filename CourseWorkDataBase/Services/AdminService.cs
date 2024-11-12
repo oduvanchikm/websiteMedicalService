@@ -54,7 +54,7 @@ public class AdminService
         var user = new User
         {
             Email = email,
-            PersonalNumber = hashedPersonalNumber,
+            Password = hashedPersonalNumber,
             RoleId = role.Id,
             CreatedAt = DateTime.UtcNow
         };

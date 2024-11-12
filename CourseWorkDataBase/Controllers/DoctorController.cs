@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Controllers;
 
+[Authorize]
 public class DoctorController : Controller
 {
     private readonly ApplicationDbContext _context;

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CourseWorkDataBase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241112091843_Migrations3")]
+    [Migration("20241112130632_Migrations3")]
     partial class Migrations3
     {
         /// <inheritdoc />
@@ -240,6 +240,23 @@ namespace CourseWorkDataBase.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Statuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Name = "Booked"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Name = "Not booked"
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            Name = "Canceled"
+                        });
                 });
 
             modelBuilder.Entity("CourseWorkDataBase.Models.User", b =>
@@ -259,9 +276,7 @@ namespace CourseWorkDataBase.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<string>("Password")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PersonalNumber")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<long>("RoleId")
@@ -289,7 +304,7 @@ namespace CourseWorkDataBase.Migrations
                     b.HasOne("CourseWorkDataBase.Models.AppointmentSlot", "AppointmentSlot")
                         .WithOne("Appointment")
                         .HasForeignKey("CourseWorkDataBase.Models.Appointment", "AppointmentSlotId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("CourseWorkDataBase.Models.Patient", "Patient")

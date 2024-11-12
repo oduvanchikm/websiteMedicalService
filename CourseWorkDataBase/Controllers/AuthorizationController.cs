@@ -1,22 +1,28 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using CourseWorkDataBase.Data;
-using CourseWorkDataBase.Models;
 using CourseWorkDataBase.ViewModels;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
+using System.Security.Claims;
 
 namespace CourseWorkDataBase.Controllers;
 
-// [Route("login")]
 public class AuthorizationController : Controller
 {
+    public enum UserRole
+    {
+        Admin = 1,
+        Doctor = 2,
+        Patient = 3
+    }
+    
     private readonly AuthorizationService _authService;
+    private readonly ILogger<AuthorizationController> _logger;
 
-    public AuthorizationController(AuthorizationService authService)
+    public AuthorizationController(AuthorizationService authService, ILogger<AuthorizationController> logger)
     {
         _authService = authService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -44,43 +50,49 @@ public class AuthorizationController : Controller
             return RedirectToAction("AuthorizationPage", "Authorization");
         }
         
-        if (user.RoleId == 1)
+        var claims = new List<Claim>
         {
-            return RedirectToAction("DoctorsList", "Admin");
-        }
-        else if (user.RoleId == 2)
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Email),
+            new Claim(ClaimTypes.Role, user.Role.Name)
+        };
+
+        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var authProperties = new AuthenticationProperties
         {
-            return RedirectToAction("DoctorPage", "Doctor");
-        }
-        else if (user.RoleId == 3)
-        {
-            return RedirectToAction("PatientPage", "Patient");
-        }
+            IsPersistent = true,
+            AllowRefresh = true
+        };
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(claimsIdentity),
+            authProperties
+        );
         
+        var userRole = (UserRole)user.RoleId;
+
+        switch (userRole)
+        {
+            case UserRole.Admin:
+                return RedirectToAction("DoctorsList", "Admin");
+            case UserRole.Doctor:
+                return RedirectToAction("DoctorPage", "Doctor");
+            case UserRole.Patient:
+                return RedirectToAction("PatientPage", "Patient");
+            default:
+                _logger.LogWarning("Unknown role {RoleId} for user with email {Email}", user.RoleId, user.Email);
+                TempData["ErrorMessage"] = "Unknown user role.";
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return RedirectToAction("AuthorizationPage", "Authorization");
+        }
+    }
+    
+    [HttpPost]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("AuthorizationPage", "Authorization");
     }
 
-    // [HttpPost]
-    // public async Task<IActionResult> LoginDoctor(LoginDoctorRequest request)
-    // {
-    //     if (!ModelState.IsValid)
-    //     {
-    //         TempData["ErrorMessage"] = "Invalid login request.";
-    //         return RedirectToAction("AuthorizationPage", "Authorization");
-    //     }
-    //
-    //     var user = await _authService.AuthenticateDoctor(request.Email, request.PersonalNumber);
-    //     if (user == null)
-    //     {
-    //         TempData["ErrorMessage"] = "Invalid personal number.";
-    //         return RedirectToAction("AuthorizationPage", "Authorization");
-    //     }
-    //
-    //     if (user.RoleId == 2)
-    //     {
-    //         return RedirectToAction("DoctorPage", "Doctor");
-    //     }
-    //     
-    //     return 
-    // }
 }

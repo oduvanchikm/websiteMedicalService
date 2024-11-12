@@ -11,16 +11,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-//     .AddCookie(options =>
-//     {
-//         options.LoginPath = "/Account/Login";
-//         options.AccessDeniedPath = "/Account/AccessDenied";
-//         options.Cookie.HttpOnly = true;
-//         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-//         options.Cookie.SameSite = SameSiteMode.Strict;
-//         options.ExpireTimeSpan = TimeSpan.FromHours(1);
-//     });
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Authorization/AuthorizationPage";
+        options.AccessDeniedPath = "/Authorization/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromHours(1); // Настройте срок действия куки
+        options.SlidingExpiration = true;
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("DoctorPolicy", policy => policy.RequireRole("Doctor"));
+    options.AddPolicy("PatientPolicy", policy => policy.RequireRole("Patient"));
+});
 
 builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<RegistrationService>();

@@ -31,9 +31,10 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new DoctorConfiguration());
         modelBuilder.ApplyConfiguration(new SpecialtyConfiguration());
         modelBuilder.ApplyConfiguration(new ClinicConfiguration());
-        modelBuilder.ApplyConfiguration(new AppointmentConfiguration());
-        modelBuilder.ApplyConfiguration(new AppointmentSlotConfiguration());
         modelBuilder.ApplyConfiguration(new StatusConfiguration());
+        modelBuilder.ApplyConfiguration(new AppointmentSlotConfiguration());
+        modelBuilder.ApplyConfiguration(new AppointmentConfiguration());
+        
         
         
         base.OnModelCreating(modelBuilder);

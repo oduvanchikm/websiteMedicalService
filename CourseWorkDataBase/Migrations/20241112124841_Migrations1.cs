@@ -75,8 +75,7 @@ namespace CourseWorkDataBase.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Email = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: true),
-                    PersonalNumber = table.Column<string>(type: "text", nullable: true),
+                    Password = table.Column<string>(type: "text", nullable: false),
                     RoleId = table.Column<long>(type: "bigint", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -189,7 +188,7 @@ namespace CourseWorkDataBase.Migrations
                         column: x => x.AppointmentSlotId,
                         principalTable: "AppointmentSlots",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Appointments_Patients_Id",
                         column: x => x.Id,
@@ -215,9 +214,19 @@ namespace CourseWorkDataBase.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "Statuses",
+                columns: new[] { "Id", "Name" },
+                values: new object[,]
+                {
+                    { 1L, "Booked" },
+                    { 2L, "Not booked" },
+                    { 3L, "Canceled" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "CreatedAt", "Email", "Password", "PersonalNumber", "RoleId" },
-                values: new object[] { 1L, new DateTimeOffset(new DateTime(2024, 11, 12, 9, 11, 35, 986, DateTimeKind.Unspecified).AddTicks(4450), new TimeSpan(0, 0, 0, 0, 0)), "mkgubareva2005@gmail.com", "$2a$11$o.sTnyjh8Mr9ArOWpr5Q..rsRPFHJ7EJ6pIeFUyVEfP2fe5b1riHm", null, 1L });
+                columns: new[] { "Id", "CreatedAt", "Email", "Password", "RoleId" },
+                values: new object[] { 1L, new DateTimeOffset(new DateTime(2023, 10, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), "admin@example.com", "$2a$11$o.sTnyjh8Mr9ArOWpr5Q..rsRPFHJ7EJ6pIeFUyVEfP2fe5b1riHm", 1L });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_AppointmentSlotId",

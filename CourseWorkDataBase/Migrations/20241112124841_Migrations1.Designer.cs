@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CourseWorkDataBase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241112091136_Migrations1")]
+    [Migration("20241112124841_Migrations1")]
     partial class Migrations1
     {
         /// <inheritdoc />
@@ -240,6 +240,23 @@ namespace CourseWorkDataBase.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Statuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Name = "Booked"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Name = "Not booked"
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            Name = "Canceled"
+                        });
                 });
 
             modelBuilder.Entity("CourseWorkDataBase.Models.User", b =>
@@ -259,9 +276,7 @@ namespace CourseWorkDataBase.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<string>("Password")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PersonalNumber")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<long>("RoleId")
@@ -277,8 +292,8 @@ namespace CourseWorkDataBase.Migrations
                         new
                         {
                             Id = 1L,
-                            CreatedAt = new DateTimeOffset(new DateTime(2024, 11, 12, 9, 11, 35, 986, DateTimeKind.Unspecified).AddTicks(4450), new TimeSpan(0, 0, 0, 0, 0)),
-                            Email = "mkgubareva2005@gmail.com",
+                            CreatedAt = new DateTimeOffset(new DateTime(2023, 10, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Email = "admin@example.com",
                             Password = "$2a$11$o.sTnyjh8Mr9ArOWpr5Q..rsRPFHJ7EJ6pIeFUyVEfP2fe5b1riHm",
                             RoleId = 1L
                         });
@@ -289,7 +304,7 @@ namespace CourseWorkDataBase.Migrations
                     b.HasOne("CourseWorkDataBase.Models.AppointmentSlot", "AppointmentSlot")
                         .WithOne("Appointment")
                         .HasForeignKey("CourseWorkDataBase.Models.Appointment", "AppointmentSlotId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("CourseWorkDataBase.Models.Patient", "Patient")

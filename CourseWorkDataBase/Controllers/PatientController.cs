@@ -10,15 +10,17 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace CourseWorkDataBase.Controllers;
 
-// [Authorize(Roles = "Patient")]
+[Authorize]
 public class PatientController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly SlotGenerationService _slotService;
+    private readonly ILogger<PatientController> _logger;
 
-    public PatientController(ApplicationDbContext context)
+    public PatientController(ApplicationDbContext context, ILogger<PatientController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<IActionResult> PatientPage()
@@ -32,7 +34,7 @@ public class PatientController : Controller
     public async Task<IActionResult> ViewDoctor(long doctorId)
     {
         var slots = await _context.AppointmentSlots
-            .Where(s => s.DoctorId == doctorId && s.StartTime >= DateTime.Today)
+            .Where(s => s.DoctorId == doctorId && s.StartTime >= DateTime.Today && !s.IsBooked)
             .OrderBy(s => s.StartTime)
             .ToListAsync();
 
@@ -40,6 +42,7 @@ public class PatientController : Controller
             .FirstOrDefaultAsync(d => d.ID == doctorId);
         if (doctor == null)
         {
+            _logger.LogError("Doctor Not Found");
             return NotFound();
         }
 
@@ -57,90 +60,156 @@ public class PatientController : Controller
     {
         Console.Out.WriteLine("BookAppointment1");
 
-        if (!User.Identity.IsAuthenticated)
-        {
-            return RedirectToAction("AuthorizationPage", "Authorization");
-        }
-
-        var username = User.Identity.Name;
-        if (string.IsNullOrEmpty(username))
-        {
-            return RedirectToAction("AuthorizationPage", "Authorization");
-        }
-
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == username);
-        if (user == null)
-        {
-            return RedirectToAction("AuthorizationPage", "Authorization");
-        }
-
-        long userId = user.Id;
-
-
+        var userId = GetCurrentUserId();
+        
         var slot = await _context.AppointmentSlots
-            .Include(s => s.Doctor)
-            .FirstOrDefaultAsync(s => s.Id == slotId);
+            .Where(x => x.Id == slotId)
+            .FirstOrDefaultAsync();
+        
+        Console.Out.WriteLine("BookAppointment5");
 
-        if (slot == null || slot.IsBooked)
+        if (slot.IsBooked || slot == null)
         {
-            Console.Out.WriteLine("BookAppointment4");
+            Console.Out.WriteLine("BookAppointment52");
             return RedirectToAction("PatientPage", "Patient");
         }
 
-        Console.Out.WriteLine("BookAppointment5");
+        var patient = await _context.Patients
+            .Where(p => p.UserId == userId)
+            .FirstOrDefaultAsync();
+        
+        if (patient == null)
+        {
+            Console.Out.WriteLine("No patient found for user id " + userId);
+        }
+        
+        Console.Out.WriteLine("Patient id " + patient.Id + " and user id " + userId);
 
         var appointment = new Appointment
         {
-            AppointmentSlotId = slot.Id,
-            PatientId = userId,
+            AppointmentSlotId = slotId,
+            PatientId = patient.Id,
             Date = DateTime.UtcNow,
             StatusId = 1
         };
+        
+        Console.Out.WriteLine("slot id " + appointment.AppointmentSlotId);
+        Console.Out.WriteLine("patient id " + appointment.PatientId);
+        Console.Out.WriteLine("date " + appointment.Date);
+        Console.Out.WriteLine("statis id " + appointment.StatusId);
+        
         Console.Out.WriteLine("BookAppointment6");
 
         slot.IsBooked = true;
         Console.Out.WriteLine("BookAppointment7");
-
-        _context.Appointments.Add(appointment);
-        Console.Out.WriteLine("BookAppointment8");
-        _context.Entry(slot).State = EntityState.Modified;
-        Console.Out.WriteLine("BookAppointment9");
-
+        
         try
         {
-            Console.Out.WriteLine("BookAppointment10");
+            _context.Appointments.Add(appointment);
+            _context.AppointmentSlots.Update(slot);
             await _context.SaveChangesAsync();
-            Console.Out.WriteLine("BookAppointment11");
+            Console.Out.WriteLine("BookAppointment9");
         }
         catch (DbUpdateConcurrencyException)
         {
             TempData["ErrorMessage"] = "There was an error with your booking. Try again.";
             return RedirectToAction("PatientPage", "Patient");
         }
-
+        catch (Exception ex) 
+        {
+            _logger.LogError(ex.Message, "Error occurred while booking appointment.");
+            TempData["ErrorMessage"] = "An unexpected error occurred. Please try again.";
+            return RedirectToAction("PatientPage", "Patient");
+        }
+        
         Console.Out.WriteLine("BookAppointment12");
         return RedirectToAction("PatientAppointments", "Patient");
     }
 
-    public async Task<IActionResult> PatientAppointments(long id)
+    [HttpGet]
+    public async Task<IActionResult> PatientAppointments()
     {
-        var user = await _context.Patients
-            .Include(x => x.User)
-            .FirstOrDefaultAsync(x => x.Id == id);
-
-        if (user == null)
+        try
         {
-            return NotFound();
+            var userId = GetCurrentUserId();
+        
+            var patient = await _context.Patients
+                .Where(p => p.UserId == userId)
+                .FirstOrDefaultAsync();
+
+            if (patient == null)
+            {
+                _logger.LogWarning("Patient not found {UserId}", userId);
+                return NotFound("Patient not found.");
+            }
+        
+            Console.Out.WriteLine("Patient id " + patient.Id + " and user id " + userId);
+
+            var appointments = await _context.Appointments
+                .Where(a => a.PatientId == patient.Id)
+                .Include(a => a.AppointmentSlot)
+                .ThenInclude(s => s.Doctor)
+                .Include(a => a.Status)
+                .OrderBy(a => a.AppointmentSlot.StartTime)
+                .ToListAsync();
+
+            return View(appointments);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при получении записей на прием пациента.");
+            return StatusCode(500, "Внутренняя ошибка сервера.");
+        }
+    }
+    
+    [HttpPost]
+    public async Task<IActionResult> CancelAppointment(long appointmentId)
+    {
+        var appointment = await _context.Appointments
+            .Include(a => a.AppointmentSlot)
+            .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+        if (appointment == null || appointment.PatientId != GetCurrentUserId())
+        {
+            TempData["ErrorMessage"] = "Appointment not found or you do not have permission to cancel it.";
+            return RedirectToAction("PatientAppointments");
         }
 
-        var appointments = await _context.Appointments
-            .Include(a => a.AppointmentSlot)
-            .ThenInclude(s => s.Doctor)
-            .Where(a => a.PatientId == user.Id)
-            .OrderBy(a => a.AppointmentSlot.StartTime)
-            .ToListAsync();
+        if (appointment.StatusId != 1)
+        {
+            TempData["ErrorMessage"] = "Only scheduled appointments can be canceled.";
+            return RedirectToAction("PatientAppointments");
+        }
 
-        return View(appointments);
+        appointment.StatusId = 3; 
+        appointment.AppointmentSlot.IsBooked = false;
+
+        _context.Appointments.Update(appointment);
+        _context.AppointmentSlots.Update(appointment.AppointmentSlot);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Appointment has been canceled successfully.";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while canceling appointment.");
+            TempData["ErrorMessage"] = "An unexpected error occurred. Please try again.";
+        }
+
+        return RedirectToAction("PatientAppointments");
+    }
+
+    private long GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim != null && long.TryParse(userIdClaim.Value, out long userId))
+        {
+            return userId;
+        }
+        
+        throw new InvalidOperationException("Couldn't get the ID of the current user.");
     }
 
     // public async Task<IActionResult> MedicalRecord(long appointmentId)

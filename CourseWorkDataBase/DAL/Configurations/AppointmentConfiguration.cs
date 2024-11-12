@@ -13,9 +13,19 @@ public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
         builder.Property(x => x.Date)
             .IsRequired();
         
-        builder.HasOne(x => x.AppointmentSlot)
-            .WithOne(x => x.Appointment)
-            .HasForeignKey<Appointment>(x => x.AppointmentSlotId);
+        builder.HasOne(a => a.Patient)
+            .WithMany(p => p.Appointments)
+            .HasForeignKey(a => a.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.HasOne(a => a.AppointmentSlot)
+            .WithOne(a => a.Appointment)
+            .HasForeignKey<Appointment>(a => a.AppointmentSlotId)
+            .IsRequired() 
+            .OnDelete(DeleteBehavior.Restrict); 
+        
+        builder.HasIndex(a => a.AppointmentSlotId)
+            .IsUnique();
         
         builder.HasOne(x => x.Status)
             .WithMany(r => r.Appointments)

@@ -15,10 +15,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(50);
         
         builder.Property(x => x.Password)
-            .IsRequired(false);
+            .IsRequired();
 
-        builder.Property(x => x.PersonalNumber)
-            .IsRequired(false);
+        // builder.Property(x => x.PersonalNumber)
+        //     .IsRequired(false);
         
         builder.Property(x => x.CreatedAt)
             .IsRequired();

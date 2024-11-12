@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using CourseWorkDataBase.Data;
 using CourseWorkDataBase.DAL;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Controllers;
 
+[Authorize]
 public class AdminController : Controller
 {
     private readonly AdminService _adminService;
