@@ -1,6 +1,6 @@
 using System.Security.Claims;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
-using System.Globalization;
+using System.Data;
+using Npgsql;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +35,6 @@ public class PatientController : Controller
         return doctors;
     }
 
-
     public async Task<IActionResult> PatientPage(long? specialtyId)
     {
         var specialties = await _context.Specialties
@@ -68,7 +67,6 @@ public class PatientController : Controller
         return View(viewModel);
     }
 
-
     public async Task<IActionResult> ViewDoctor(long doctorId)
     {
         var slots = await _context.AppointmentSlots
@@ -96,72 +94,35 @@ public class PatientController : Controller
     [HttpPost]
     public async Task<IActionResult> BookAppointment(long slotId)
     {
-        Console.Out.WriteLine("BookAppointment1");
-
         var userId = GetCurrentUserId();
-        
-        var slot = await _context.AppointmentSlots
-            .Where(x => x.Id == slotId)
-            .FirstOrDefaultAsync();
-        
-        Console.Out.WriteLine("BookAppointment5");
-
-        if (slot.IsBooked || slot == null)
-        {
-            Console.Out.WriteLine("BookAppointment52");
-            return RedirectToAction("PatientPage", "Patient");
-        }
 
         var patient = await _context.Patients
             .Where(p => p.UserId == userId)
             .FirstOrDefaultAsync();
-        
         if (patient == null)
         {
-            Console.Out.WriteLine("No patient found for user id " + userId);
+            _logger.LogWarning("Patient not found {UserId}", userId);
+            return NotFound("Patient not found.");
         }
         
-        Console.Out.WriteLine("Patient id " + patient.Id + " and user id " + userId);
-
-        var appointment = new Appointment
-        {
-            AppointmentSlotId = slotId,
-            PatientId = patient.Id,
-            Date = DateTime.UtcNow,
-            StatusId = 1
-        };
-        
-        Console.Out.WriteLine("slot id " + appointment.AppointmentSlotId);
-        Console.Out.WriteLine("patient id " + appointment.PatientId);
-        Console.Out.WriteLine("date " + appointment.Date);
-        Console.Out.WriteLine("statis id " + appointment.StatusId);
-        
-        Console.Out.WriteLine("BookAppointment6");
-
-        slot.IsBooked = true;
-        Console.Out.WriteLine("BookAppointment7");
+        Console.Out.WriteLine($"Patient {patient.Id}");
         
         try
         {
-            _context.Appointments.Add(appointment);
-            _context.AppointmentSlots.Update(slot);
-            await _context.SaveChangesAsync();
-            Console.Out.WriteLine("BookAppointment9");
+            await _context.Database.ExecuteSqlRawAsync(
+                "CALL BookAppointment({0}, {1})",
+                slotId,
+                patient.Id
+            );
+            
+            return RedirectToAction("PatientAppointments", "Patient");
         }
-        catch (DbUpdateConcurrencyException)
+        catch (Exception ex)
         {
-            TempData["ErrorMessage"] = "There was an error with your booking. Try again.";
+            _logger.LogError(ex, $"Error when booking an appointment for a patient {patient.Id}");
+            TempData["ErrorMessage"] = ex.Message; 
             return RedirectToAction("PatientPage", "Patient");
         }
-        catch (Exception ex) 
-        {
-            _logger.LogError(ex.Message, "Error occurred while booking appointment.");
-            TempData["ErrorMessage"] = "An unexpected error occurred. Please try again.";
-            return RedirectToAction("PatientPage", "Patient");
-        }
-        
-        Console.Out.WriteLine("BookAppointment12");
-        return RedirectToAction("PatientAppointments", "Patient");
     }
 
     [HttpGet]
@@ -195,8 +156,8 @@ public class PatientController : Controller
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при получении записей на прием пациента.");
-            return StatusCode(500, "Внутренняя ошибка сервера.");
+            _logger.LogError(ex, "An error occurred when receiving patient appointment records.");
+            return StatusCode(500, "Internal server error.");
         }
     }
     
