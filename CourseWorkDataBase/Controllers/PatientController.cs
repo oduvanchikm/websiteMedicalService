@@ -1,6 +1,8 @@
 using System.Security.Claims;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.Data;
@@ -22,14 +24,50 @@ public class PatientController : Controller
         _context = context;
         _logger = logger;
     }
-
-    public async Task<IActionResult> PatientPage()
+    
+    public async Task<IEnumerable<DoctorDTO>> GetDoctorsBySpecialtyAsync(long? specialtyId)
     {
-        var doctors = await _context.Doctors
-            .Include(d => d.Specialty)
-            .ToListAsync();
-        return View(doctors);
+        var param = specialtyId ?? 0;
+
+        var doctors = await _context.DoctorsDto
+            .FromSqlInterpolated($"SELECT * FROM GetDoctorsBySpecialty({param})").ToListAsync();
+
+        return doctors;
     }
+
+
+    public async Task<IActionResult> PatientPage(long? specialtyId)
+    {
+        var specialties = await _context.Specialties
+            .OrderBy(s => s.NameSpecialty)
+            .ToListAsync();
+        
+        var doctors = await GetDoctorsBySpecialtyAsync(specialtyId);
+        
+        var specialtyItems = specialties
+            .Select(s => new SelectListItem
+                {
+                    Value = s.Id.ToString(),
+                    Text = s.NameSpecialty
+                }
+            ).ToList();
+        
+        specialtyItems.Insert(0, new SelectListItem
+        {
+            Value = "0",
+            Text = "Все специальности"
+        });
+        
+        var viewModel = new PatientPageViewModel
+        {
+            Doctors = doctors,
+            Specialties = specialtyItems,
+            SelectedSpecialtyId = specialtyId
+        };
+        
+        return View(viewModel);
+    }
+
 
     public async Task<IActionResult> ViewDoctor(long doctorId)
     {

@@ -1,8 +1,8 @@
-@using CourseWorkDataBase.Models
-@model IEnumerable<Doctor>
+@using CourseWorkDataBase.ViewModels
+@model PatientPageViewModel
 
 @{
-    ViewData["Title"] = "Список Врачей";
+ViewData["Title"] = "List of Doctors";
 }
 
 <!DOCTYPE html>
@@ -14,10 +14,29 @@
 </head>
 <body>
 <div class="container mt-5">
-    <h1 class="mb-4">Our Doctors</h1>
+    <h1 class="mb-4">Doctors</h1>
 
-    <div class="text-center">
-        <a href="@Url.Action("PatientAppointments", "Patient")" class="btn">My appointments</a>
+    <div class="mb-4">
+        <form method="get" asp-action="PatientPage" asp-controller="Patient" class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label for="specialtySelect" class="col-form-label">Filter by Specialty:</label>
+            </div>
+            <div class="col-auto">
+                <select id="specialtySelect" name="specialtyId" class="form-select">
+                    @foreach (var specialty in Model.Specialties)
+                    {
+                    <option value="@specialty.Value" @(specialty.Value == (Model.SelectedSpecialtyId?.ToString() ?? "0") ? "selected" : "")>@specialty.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="text-center mb-4">
+        <a href="@Url.Action("PatientAppointments", "Patient")" class="btn btn-secondary">My appointments</a>
     </div>
 
     <table class="table table-striped">
@@ -26,29 +45,29 @@
             <th>Name</th>
             <th>Surname</th>
             <th>Specialty</th>
-            <th>Actions</th>
+            <th>Action</th>
         </tr>
         </thead>
         <tbody>
-        @if (Model != null && Model.Any())
+        @if (Model.Doctors != null && Model.Doctors.Any())
         {
-            foreach (var doctor in Model)
-            {
-                <tr>
-                    <td>@doctor.FirstName</td>
-                    <td>@doctor.FamilyName</td>
-                    <td>@doctor.Specialty.NameSpecialty</td>
-                    <td>
-                        <a href="@Url.Action("ViewDoctor", "Patient", new { doctorId = doctor.ID })" class="btn btn-info btn-sm">View</a>
-                    </td>
-                </tr>
-            }
+        foreach (var doctor in Model.Doctors)
+        {
+        <tr>
+            <td>@doctor.FirstName</td>
+            <td>@doctor.FamilyName</td>
+            <td>@doctor.NameSpecialty</td>
+            <td>
+                <a href="@Url.Action("ViewDoctor", "Patient", new { doctorId = doctor.ID })" class="btn btn-info btn-sm">View</a>
+            </td>
+        </tr>
+        }
         }
         else
         {
-            <tr>
-                <td colspan="4" class="text-center">No doctors found.</td>
-            </tr>
+        <tr>
+            <td colspan="4" class="text-center">Doctors have not been found.</td>
+        </tr>
         }
         </tbody>
     </table>

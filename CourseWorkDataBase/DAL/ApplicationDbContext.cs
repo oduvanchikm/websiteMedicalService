@@ -23,6 +23,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<AppointmentSlot> AppointmentSlots { get; set; } 
     public DbSet<Status> Statuses { get; set; }
     
+    public DbSet<DoctorDTO> DoctorsDto { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new RoleConfiguration());
@@ -34,6 +36,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new StatusConfiguration());
         modelBuilder.ApplyConfiguration(new AppointmentSlotConfiguration());
         modelBuilder.ApplyConfiguration(new AppointmentConfiguration());
+        modelBuilder.ApplyConfiguration(new DoctorDTOConfiguration());
         
         
         
