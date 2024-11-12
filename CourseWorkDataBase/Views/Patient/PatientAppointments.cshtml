@@ -1,9 +1,17 @@
 @model IEnumerable<CourseWorkDataBase.Models.Appointment>
 
 @{
-    ViewData["Title"] = "Записи на прием";
+    ViewData["Title"] = "My Appointments";
 }
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>@ViewData["Title"] - Medical Center</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
 <div class="container my-5">
     <div class="row mb-4">
         <div class="col">
@@ -14,7 +22,7 @@
     @if (!Model.Any())
     {
         <div class="alert alert-info text-center" role="alert">
-            У вас пока нет записей на прием.
+            You don't have an appointment yet.
         </div>
     }
     else
@@ -23,10 +31,10 @@
             <table class="table table-hover table-bordered align-middle">
                 <thead class="table-dark">
                 <tr>
-                    <th scope="col"><i class="bi bi-calendar-event"></i> Дата и Время</th>
-                    <th scope="col"><i class="bi bi-person"></i> Доктор</th>
-                    <th scope="col"><i class="bi bi-list-check"></i> Статус</th>
-                    <th scope="col"><i class="bi bi-tools"></i> Действия</th>
+                    <th scope="col"><i class="bi bi-calendar-event"></i> Date and Time</th>
+                    <th scope="col"><i class="bi bi-person"></i> Doctor</th>
+                    <th scope="col"><i class="bi bi-list-check"></i> Status</th>
+                    <th scope="col"><i class="bi bi-tools"></i> Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -36,35 +44,27 @@
                         <td>@appointment.AppointmentSlot.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
                         <td>@($"{appointment.AppointmentSlot.Doctor.FirstName} {appointment.AppointmentSlot.Doctor.FamilyName}")</td>
                         <td>
-                            @if (appointment.Status.Name.ToLower() == "запланировано")
-                            {
-                                <span class="badge bg-primary">@appointment.Status.Name</span>
+                            @{
+                                string statusName = appointment.Status.Name.ToLower();
+                                string badgeClass = statusName switch
+                                {
+                                    "Canceled" => "bg-danger",
+                                    _ => "bg-secondary"
+                                };
                             }
-                            else if (appointment.Status.Name.ToLower() == "завершено")
-                            {
-                                <span class="badge bg-success">@appointment.Status.Name</span>
-                            }
-                            else if (appointment.Status.Name.ToLower() == "отменено")
-                            {
-                                <span class="badge bg-danger">@appointment.Status.Name</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">@appointment.Status.Name</span>
-                            }
+                            <span class="badge @badgeClass">@appointment.Status.Name</span>
                         </td>
                         <td>
-                            <a href="@Url.Action("Details", "Appointments", new { id = appointment.Id })" class="btn btn-sm btn-info me-1" title="Подробнее">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="@Url.Action("Edit", "Appointments", new { id = appointment.Id })" class="btn btn-sm btn-warning me-1" title="Редактировать">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
-                            <form asp-action="Delete" asp-controller="Appointments" asp-route-id="@appointment.Id" method="post" class="d-inline" onsubmit="return confirm('Вы уверены, что хотите удалить эту запись на прием?');">
-                                <button type="submit" class="btn btn-sm btn-danger" title="Удалить">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                            <div class="row mt-4">
+                                <div class="col text-center">
+                                    <form action="@Url.Action("CancelAppointment", "Patient")" method="POST">
+                                        <input type="hidden" name="appointmentId" value="@appointment.Id"/>
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 }
@@ -72,12 +72,14 @@
             </table>
         </div>
     }
-
     <div class="row mt-4">
         <div class="col text-center">
             <a href="@Url.Action("PatientPage", "Patient")" class="btn btn-success">
-                <i class="bi bi-plus-circle"></i> Записаться на новый прием
+                <i class="bi bi-plus-circle"></i> New appointment
             </a>
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

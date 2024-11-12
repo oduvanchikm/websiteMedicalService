@@ -167,17 +167,19 @@ public class PatientController : Controller
         var appointment = await _context.Appointments
             .Include(a => a.AppointmentSlot)
             .FirstOrDefaultAsync(a => a.Id == appointmentId);
+        
+        Console.Out.WriteLine($"appointment {appointment.Id} cancelled");
 
         if (appointment == null || appointment.PatientId != GetCurrentUserId())
         {
             TempData["ErrorMessage"] = "Appointment not found or you do not have permission to cancel it.";
-            return RedirectToAction("PatientAppointments");
+            return RedirectToAction("PatientAppointments", "Patient");
         }
 
         if (appointment.StatusId != 1)
         {
             TempData["ErrorMessage"] = "Only scheduled appointments can be canceled.";
-            return RedirectToAction("PatientAppointments");
+            return RedirectToAction("PatientAppointments", "Patient");
         }
 
         appointment.StatusId = 3; 
@@ -197,7 +199,7 @@ public class PatientController : Controller
             TempData["ErrorMessage"] = "An unexpected error occurred. Please try again.";
         }
 
-        return RedirectToAction("PatientAppointments");
+        return RedirectToAction("PatientAppointments", "Patient");
     }
 
     private long GetCurrentUserId()
