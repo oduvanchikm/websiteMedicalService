@@ -36,8 +36,6 @@ public class RegisterController : Controller
                 request.FamilyName, 
                 request.Gender);
             
-            // await _signInManager.SignInAsync(patient, isPersistent: false);
-            
             return RedirectToAction("AuthorizationPage", "Authorization");
         }
         catch (ApplicationException ex)

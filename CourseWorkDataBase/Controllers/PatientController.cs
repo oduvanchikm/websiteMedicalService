@@ -167,10 +167,7 @@ public class PatientController : Controller
         var appointment = await _context.Appointments
             .Include(a => a.AppointmentSlot)
             .FirstOrDefaultAsync(a => a.Id == appointmentId);
-        
-        Console.Out.WriteLine($"appointment {appointment.Id} cancelled");
-
-        if (appointment == null || appointment.PatientId != GetCurrentUserId())
+        if (appointment == null)
         {
             TempData["ErrorMessage"] = "Appointment not found or you do not have permission to cancel it.";
             return RedirectToAction("PatientAppointments", "Patient");
@@ -181,12 +178,16 @@ public class PatientController : Controller
             TempData["ErrorMessage"] = "Only scheduled appointments can be canceled.";
             return RedirectToAction("PatientAppointments", "Patient");
         }
-
-        appointment.StatusId = 3; 
-        appointment.AppointmentSlot.IsBooked = false;
-
-        _context.Appointments.Update(appointment);
-        _context.AppointmentSlots.Update(appointment.AppointmentSlot);
+        
+        if (appointment.AppointmentSlot != null)
+        {
+            appointment.StatusId = 3;
+            appointment.AppointmentSlot.IsBooked = false;
+            _context.Appointments.Update(appointment);
+            _context.AppointmentSlots.Update(appointment.AppointmentSlot);
+        }
+        
+        Console.Out.WriteLine($"appointment {appointment.Id} cancelled");
 
         try
         {
