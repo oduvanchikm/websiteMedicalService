@@ -16,7 +16,6 @@ namespace CourseWorkDataBase.Controllers;
 public class PatientController : Controller
 {
     private readonly ApplicationDbContext _context;
-    private readonly SlotGenerationService _slotService;
     private readonly ILogger<PatientController> _logger;
 
     public PatientController(ApplicationDbContext context, ILogger<PatientController> logger)
@@ -54,7 +53,7 @@ public class PatientController : Controller
         specialtyItems.Insert(0, new SelectListItem
         {
             Value = "0",
-            Text = "Все специальности"
+            Text = "All specialties"
         });
         
         var viewModel = new PatientPageViewModel
@@ -161,6 +160,8 @@ public class PatientController : Controller
         }
     }
     
+    
+    
     [HttpPost]
     public async Task<IActionResult> CancelAppointment(long appointmentId)
     {
@@ -213,21 +214,4 @@ public class PatientController : Controller
         
         throw new InvalidOperationException("Couldn't get the ID of the current user.");
     }
-
-    // public async Task<IActionResult> MedicalRecord(long appointmentId)
-    // {
-    //     var record = await _context.
-    //         .Include(r => r.Appointment)
-    //         .ThenInclude(a => a.AppointmentSlot)
-    //         .ThenInclude(s => s.Doctor)
-    //         .ThenInclude(d => d.Clinic)
-    //         .FirstOrDefaultAsync(r => r.AppointmentID == appointmentId);
-    //
-    //     if (record == null)
-    //     {
-    //         return NotFound();
-    //     }
-    //
-    //     return View(record);
-    // }
 }

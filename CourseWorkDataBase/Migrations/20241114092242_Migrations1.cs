@@ -29,6 +29,22 @@ namespace CourseWorkDataBase.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MedicalRecords",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Diagnosis = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MedicalRecords", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -174,11 +190,13 @@ namespace CourseWorkDataBase.Migrations
                 name: "Appointments",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PatientId = table.Column<long>(type: "bigint", nullable: false),
                     AppointmentSlotId = table.Column<long>(type: "bigint", nullable: false),
                     Date = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    StatusId = table.Column<long>(type: "bigint", nullable: false)
+                    StatusId = table.Column<long>(type: "bigint", nullable: false),
+                    MedicalRecordsId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -190,8 +208,13 @@ namespace CourseWorkDataBase.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Appointments_Patients_Id",
-                        column: x => x.Id,
+                        name: "FK_Appointments_MedicalRecords_MedicalRecordsId",
+                        column: x => x.MedicalRecordsId,
+                        principalTable: "MedicalRecords",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Appointments_Patients_PatientId",
+                        column: x => x.PatientId,
                         principalTable: "Patients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -233,6 +256,17 @@ namespace CourseWorkDataBase.Migrations
                 table: "Appointments",
                 column: "AppointmentSlotId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Appointments_MedicalRecordsId",
+                table: "Appointments",
+                column: "MedicalRecordsId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Appointments_PatientId",
+                table: "Appointments",
+                column: "PatientId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointments_StatusId",
@@ -280,6 +314,9 @@ namespace CourseWorkDataBase.Migrations
 
             migrationBuilder.DropTable(
                 name: "AppointmentSlots");
+
+            migrationBuilder.DropTable(
+                name: "MedicalRecords");
 
             migrationBuilder.DropTable(
                 name: "Patients");

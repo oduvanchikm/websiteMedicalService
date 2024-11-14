@@ -22,20 +22,15 @@
                 <li class="nav-item mb-2">
                     <a class="nav-link active" asp-action="DoctorDashboard">Manage Slots</a>
                 </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link" asp-action="ViewPatients">View Patients</a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link" asp-action="Settings">Settings</a>
-                </li>
             </ul>
         </div>
         <div class="col-md-9">
-            <table>
+            <table class="table">
                 <thead>
                 <tr>
                     <th>Time</th>
                     <th>Patient</th>
+                    <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -48,22 +43,25 @@
                             <tr>
                                 <td>@appointment.StartTime.ToString("g")</td>
                                 <td>@appointment.Appointment.Patient.FirstName @appointment.Appointment.Patient.FamilyName</td>
+                                <td>
+                                    <a href=@Url.Action("AddMedicalRecords", "Doctor", new {appointment.Appointment.Id})>Personal list</a>
+                                </td>
                             </tr>
                         }
                         else
                         {
                             <tr>
-                                <td colspan="2">Información del paciente no disponible</td>
+                                <td colspan="3">Information not found</td>
                             </tr>
                         }
                     }
-
                 }
                 else
                 {
-                    <td colspan="4" class="text-center">Doctors have not been found.</td>
+                    <tr>
+                        <td colspan="3" class="text-center">Doctors have not been found.</td>
+                    </tr>
                 }
-
                 </tbody>
             </table>
         </div>

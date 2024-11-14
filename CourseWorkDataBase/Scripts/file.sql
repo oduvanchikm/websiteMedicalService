@@ -45,7 +45,7 @@ BEGIN
     SET "IsBooked" = TRUE
     WHERE "Id" = p_SlotId;
 
-    INSERT INTO "Appointments" ("PatientId", "AppointmentSlotId", "Date", "StatusId")
+    INSERT INTO "Appointments" ("PatientId", "AppointmentSlotId", "Date", "StatusId", "")
     VALUES (p_PatientId, p_SlotId, NOW(), 1);
 
 EXCEPTION
@@ -53,3 +53,11 @@ EXCEPTION
         RAISE EXCEPTION 'An error occurred during booking: %', SQLERRM;
 END;
 $$;
+
+-- CREATE OR REPLACE FUNCTION GetDoctorBookedAppointment(p_UserId BIGINT)
+-- RETURNS TABLE 
+-- (
+--     
+-- )
+-- AS
+--     $$

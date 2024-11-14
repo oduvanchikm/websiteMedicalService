@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using CourseWorkDataBase.DAL;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using CourseWorkDataBase.Models;
 using CourseWorkDataBase.ViewModels;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +20,6 @@ public class DoctorController : Controller
         _context = context;
         _logger = logger;
     }
-
-    // [HttpGet]
-    // public IActionResult DoctorPage()
-    // {
-    //     return View();
-    // }
     
     private long GetCurrentUserId()
     {
@@ -36,8 +31,7 @@ public class DoctorController : Controller
         
         throw new InvalidOperationException("Couldn't get the ID of the current user.");
     }
-    
-    // [HttpGet]
+
     public async Task<IActionResult> DoctorPage()
     {
         var userId = GetCurrentUserId();
@@ -60,8 +54,7 @@ public class DoctorController : Controller
         }
     
         Console.Out.WriteLine($"Current doctor: {doctor.ID}");
-    
-        // Get a list of booked appointment slots
+        
         var appointmentSlots = await _context.AppointmentSlots
             .Include(a => a.Appointment)
             .ThenInclude(ap => ap.Patient)
@@ -72,32 +65,99 @@ public class DoctorController : Controller
 
         return View(appointmentSlots);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> AddMedicalRecords(long id)
+    {
+        if (id <= 0)
+        {
+            _logger.LogWarning("Invalid appointment ID.");
+            return NotFound();
+        }
     
-    // [HttpPost]
-    // [ValidateAntiForgeryToken]
-    // public async Task<IActionResult> CreateSlot(AppointmentSlot model)
-    // {
-    //     if (ModelState.IsValid)
-    //     {
-    //         var doctorID = model.DoctorId;
-    //         _context.AppointmentSlots.Add(model);
-    //         await _context.SaveChangesAsync();
-    //         return RedirectToAction(nameof());
-    //     }
-    //
-    //     return View(model);
-    // }
+        var appointment = await _context.Appointments
+            .Include(a => a.Patient)
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (appointment == null)
+        {
+            _logger.LogWarning($"Appointment with ID {id} not found.");
+            return NotFound();
+        }
+
+        var medications = await _context.Medications
+            .ToListAsync();
     
-    // public async Task<IActionResult> DeleteSlot(long id)
-    // {
-    //     var slot = await _context.AppointmentSlots.FindAsync(id);
-    //     if (slot == null || slot.IsBooked)
-    //     {
-    //         return NotFound();
-    //     }
-    //     
-    //     _context.AppointmentSlots.Remove(slot);
-    //     await _context.SaveChangesAsync();
-    //     return RedirectToAction(nameof(ManageSlots));
-    // }
+        var viewModel = new AddMedicalRecordsViewModel
+        {
+            MedicationsList = medications.Select(m => new SelectListItem
+            {
+                Value = m.MedicationId.ToString(),
+                Text = m.Name
+            }),
+            AppointmentId = appointment.Id
+        };
+
+        return View(viewModel);
+    }
+    
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddMedicalRecords(AddMedicalRecordsViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var medicationsList = await _context.Medications.ToListAsync();
+            model.MedicationsList = medicationsList.Select(m => new SelectListItem
+            {
+                Value = m.MedicationId.ToString(),
+                Text = m.Name
+            });
+            return View(model);
+        }
+        
+        Console.Out.WriteLine($"Adding Medical Records: {model.MedicationsList.Count()}");
+
+        var appointment = await _context.Appointments
+            .Include(a => a.Patient)
+            .FirstOrDefaultAsync(a => a.Id == model.AppointmentId);
+        if (appointment == null)
+        {
+            return NotFound();
+        }
+        
+        Console.Out.WriteLine($"Adding Medical Records: {appointment.Id}");
+
+        var medicalRecord = new MedicalRecords
+        {
+            Description = model.Description,
+            Diagnosis = model.Diagnosis,
+            CreatedAt = DateTime.UtcNow,
+            UpdateAt = DateTime.UtcNow,
+            Id = appointment.Id
+        };
+        
+        Console.Out.WriteLine($"Ae: {model.Description}");
+        Console.Out.WriteLine($"ARecords: {model.Diagnosis}");
+
+        if (model.SelectedMedicationIds != null && model.SelectedMedicationIds.Any())
+        {
+            foreach (var medicationId in model.SelectedMedicationIds)
+            {
+                var medication = await _context.Medications.FindAsync(medicationId);
+                // if (medication != null)
+                // {
+                //     medicalRecord.MedicalRecordMedications.Add(new MedicalRecordMedication
+                //     {
+                //         MedicationId = medicationId,
+                //         Medication = medication
+                //     });
+                // }
+            }
+        }
+
+        _context.MedicalRecords.Add(medicalRecord);
+        await _context.SaveChangesAsync();
+        return RedirectToAction("DoctorPage", "Doctor");
+    }
 }

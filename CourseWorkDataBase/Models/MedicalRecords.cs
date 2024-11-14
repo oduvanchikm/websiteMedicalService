@@ -1,26 +1,20 @@
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CourseWorkDataBase.Models;
 
 public class MedicalRecords
 {
-    [Key]
     public long Id { get; set; }
-
-    [Required] 
-    public string Description { get; set; } = string.Empty;
     
-    [Required]
-    public string Diagnosis { get; set; } = string.Empty;
+    public string Description { get; set; }
     
-    [Required] 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string Diagnosis { get; set; }
     
-    [Required]
-    public DateTime UpdateAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
     
-    [ForeignKey("Appointments")] 
-    public int AppointmentID { get; set; }
-    public Appointment Appointment { get; set; } = null!;
+    public DateTime UpdateAt { get; set; }
+    
+    public Appointment? Appointments { get; set; }
+    
+    public IEnumerable<MedicalRecordMedication> MedicalRecordMedications { get; set; }
 }

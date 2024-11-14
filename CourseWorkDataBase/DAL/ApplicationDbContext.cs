@@ -11,8 +11,9 @@ public class ApplicationDbContext : DbContext
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
+        
     }
-
+    
     public DbSet<User> Users { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<Patient> Patients { get; set; }
@@ -22,8 +23,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<AppointmentSlot> AppointmentSlots { get; set; } 
     public DbSet<Status> Statuses { get; set; }
-    
+    public DbSet<MedicalRecords> MedicalRecords { get; set; }
+    public DbSet<Medications> Medications { get; set; }
     public DbSet<DoctorDTO> DoctorsDto { get; set; }
+    public DbSet<MedicalRecordMedication> MedicalRecordMedications { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,8 +40,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new AppointmentSlotConfiguration());
         modelBuilder.ApplyConfiguration(new AppointmentConfiguration());
         modelBuilder.ApplyConfiguration(new DoctorDTOConfiguration());
-        
-        
+        modelBuilder.ApplyConfiguration(new MedicalRecordsConfiguration());
+        modelBuilder.ApplyConfiguration(new MedicationsConfiguration());
+        modelBuilder.ApplyConfiguration(new MedicalRecordMedicationConfiguration());
         
         base.OnModelCreating(modelBuilder);
         
