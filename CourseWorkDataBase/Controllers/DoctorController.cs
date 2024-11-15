@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using CourseWorkDataBase.Services;
 using CourseWorkDataBase.ViewModels;
-using CourseWorkDataBase.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Controllers;
@@ -125,6 +124,7 @@ public class DoctorController : Controller
 
         try
         {
+            
             var medicalRecords = await _doctorService.AddMedicalRecordsAsync(
                 model.AppointmentId,
                 model.Description,

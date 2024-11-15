@@ -76,12 +76,10 @@ CREATE OR REPLACE FUNCTION get_patient_medical_records(p_patient_id BIGINT)
 AS
 $$
 BEGIN
-    -- Проверка наличия пациента
     IF NOT EXISTS (SELECT 1 FROM "Patients" WHERE "Id" = p_patient_id) THEN
         RAISE EXCEPTION 'Patient with ID % not found.', p_patient_id;
     END IF;
 
-    -- Возврат данных с корректными JOIN и именами столбцов
     RETURN QUERY
         SELECT
             p."Id"                          AS patient_id,
@@ -103,15 +101,14 @@ BEGIN
                 LEFT JOIN
             "MedicalRecordMedications" mrm ON mrm."MedicalRecordId" = mr."Id"
                 LEFT JOIN
-            "Medications" m ON m."MedicationId" = mrm."MedicationId"  -- Изменено с m."MedicationId" на m."Id"
+            "Medications" m ON m."MedicationId" = mrm."MedicationId"  
         WHERE
             p."Id" = p_patient_id
         ORDER BY
-            a."Id", mr."Id", m."MedicationId";  -- Изменено с m."MedicationId" на m."Id"
+            a."Id", mr."Id", m."MedicationId"; 
 END;
 $$ LANGUAGE plpgsql;
 
--- Пример вызова функции
 SELECT *
 FROM get_patient_medical_records(2::BIGINT);
 
