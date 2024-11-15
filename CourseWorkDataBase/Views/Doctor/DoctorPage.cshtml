@@ -31,6 +31,7 @@
                     <th>Time</th>
                     <th>Patient</th>
                     <th>Action</th>
+                    <th>Information</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -44,7 +45,10 @@
                                 <td>@appointment.StartTime.ToString("g")</td>
                                 <td>@appointment.Appointment.Patient.FirstName @appointment.Appointment.Patient.FamilyName</td>
                                 <td>
-                                    <a href=@Url.Action("AddMedicalRecords", "Doctor", new {appointment.Appointment.Id})>Personal list</a>
+                                    <a href=@Url.Action("AddMedicalRecords", "Doctor", new {id = appointment.Appointment.Id})>Personal list</a>
+                                </td>
+                                <td>
+                                    <a href=@Url.Action("ShowMedicalRecords", "Doctor", new {id = appointment.Appointment.PatientId})>Information</a>
                                 </td>
                             </tr>
                         }

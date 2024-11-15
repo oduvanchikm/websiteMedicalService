@@ -25,6 +25,8 @@ FROM GetDoctorsBySpecialty(0);
 SELECT *
 FROM GetDoctorsBySpecialty(1);
 
+
+
 CREATE OR REPLACE PROCEDURE BookAppointment(
     p_SlotId BIGINT,
     p_PatientId BIGINT
@@ -45,7 +47,7 @@ BEGIN
     SET "IsBooked" = TRUE
     WHERE "Id" = p_SlotId;
 
-    INSERT INTO "Appointments" ("PatientId", "AppointmentSlotId", "Date", "StatusId", "")
+    INSERT INTO "Appointments" ("PatientId", "AppointmentSlotId", "Date", "StatusId")
     VALUES (p_PatientId, p_SlotId, NOW(), 1);
 
 EXCEPTION
@@ -54,10 +56,65 @@ EXCEPTION
 END;
 $$;
 
--- CREATE OR REPLACE FUNCTION GetDoctorBookedAppointment(p_UserId BIGINT)
--- RETURNS TABLE 
--- (
---     
--- )
--- AS
---     $$
+
+DROP FUNCTION IF EXISTS get_patient_medical_records(BIGINT);
+
+CREATE OR REPLACE FUNCTION get_patient_medical_records(p_patient_id BIGINT)
+    RETURNS TABLE
+            (
+                patient_id                   BIGINT,
+                first_name                   TEXT,
+                family_name                  TEXT,
+                appointment_id               BIGINT,
+                medical_record_id            BIGINT,
+                medical_record_description   TEXT,
+                diagnosis                    TEXT,
+                medication_id                BIGINT,
+                medication_name              TEXT,
+                medication_description       TEXT
+            )
+AS
+$$
+BEGIN
+    -- Проверка наличия пациента
+    IF NOT EXISTS (SELECT 1 FROM "Patients" WHERE "Id" = p_patient_id) THEN
+        RAISE EXCEPTION 'Patient with ID % not found.', p_patient_id;
+    END IF;
+
+    -- Возврат данных с корректными JOIN и именами столбцов
+    RETURN QUERY
+        SELECT
+            p."Id"                          AS patient_id,
+            p."FirstName"::TEXT             AS first_name,
+            p."FamilyName"::TEXT            AS family_name,
+            a."Id"                          AS appointment_id,
+            mr."Id"                         AS medical_record_id,
+            mr."Description"::TEXT          AS medical_record_description,
+            mr."Diagnosis"::TEXT            AS diagnosis,
+            mrm."MedicationId"              AS medication_id,
+            m."Name"::TEXT                  AS medication_name,
+            m."Description"::TEXT           AS medication_description
+        FROM
+            "Patients" p
+                INNER JOIN
+            "Appointments" a ON a."PatientId" = p."Id"
+                INNER JOIN
+            "MedicalRecords" mr ON mr."Id" = a."MedicalRecordsId"
+                LEFT JOIN
+            "MedicalRecordMedications" mrm ON mrm."MedicalRecordId" = mr."Id"
+                LEFT JOIN
+            "Medications" m ON m."MedicationId" = mrm."MedicationId"  -- Изменено с m."MedicationId" на m."Id"
+        WHERE
+            p."Id" = p_patient_id
+        ORDER BY
+            a."Id", mr."Id", m."MedicationId";  -- Изменено с m."MedicationId" на m."Id"
+END;
+$$ LANGUAGE plpgsql;
+
+-- Пример вызова функции
+SELECT *
+FROM get_patient_medical_records(2::BIGINT);
+
+SELECT *
+FROM get_patient_medical_records(2::BIGINT);
+

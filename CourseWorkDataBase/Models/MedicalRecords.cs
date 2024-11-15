@@ -14,7 +14,8 @@ public class MedicalRecords
     
     public DateTime UpdateAt { get; set; }
     
-    public Appointment? Appointments { get; set; }
+    public long AppointmentId { get; set; }
+    public Appointment Appointment { get; set; }
     
     public IEnumerable<MedicalRecordMedication> MedicalRecordMedications { get; set; }
 }

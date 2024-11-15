@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using CourseWorkDataBase.DAL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using CourseWorkDataBase.Models;
+using CourseWorkDataBase.Services;
 using CourseWorkDataBase.ViewModels;
+using CourseWorkDataBase.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Controllers;
@@ -14,11 +15,15 @@ public class DoctorController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<DoctorController> _logger;
+    private readonly DoctorService _doctorService;
 
-    public DoctorController(ApplicationDbContext context, ILogger<DoctorController> logger)
+    public DoctorController(ApplicationDbContext context, 
+        ILogger<DoctorController> logger,
+        DoctorService doctorService)
     {
         _context = context;
         _logger = logger;
+        _doctorService = doctorService;
     }
     
     private long GetCurrentUserId()
@@ -65,6 +70,19 @@ public class DoctorController : Controller
 
         return View(appointmentSlots);
     }
+    
+    private async Task<IEnumerable<SelectListItem>> GetMedicationsSelectListAsync()
+    {
+        var medications = await _context.Medications
+            .OrderBy(x => x.Name)
+            .ToListAsync();
+    
+        return medications.Select(s => new SelectListItem
+        {
+            Value = s.MedicationId.ToString(),
+            Text = s.Name
+        }).ToList();
+    }
 
     [HttpGet]
     public async Task<IActionResult> AddMedicalRecords(long id)
@@ -74,37 +92,26 @@ public class DoctorController : Controller
             _logger.LogWarning("Invalid appointment ID.");
             return NotFound();
         }
-    
-        var appointment = await _context.Appointments
-            .Include(a => a.Patient)
-            .FirstOrDefaultAsync(a => a.Id == id);
 
-        if (appointment == null)
-        {
-            _logger.LogWarning($"Appointment with ID {id} not found.");
-            return NotFound();
-        }
-
-        var medications = await _context.Medications
-            .ToListAsync();
+        var medications = await GetMedicationsSelectListAsync();
     
-        var viewModel = new AddMedicalRecordsViewModel
+        var model = new AddMedicalRecordsViewModel
         {
-            MedicationsList = medications.Select(m => new SelectListItem
-            {
-                Value = m.MedicationId.ToString(),
-                Text = m.Name
-            }),
-            AppointmentId = appointment.Id
+            MedicationsList = medications,
+            AppointmentId = id
         };
-
-        return View(viewModel);
+        
+        Console.Out.WriteLine($"in get : {model.AppointmentId}");
+        
+        return View(model);
     }
     
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddMedicalRecords(AddMedicalRecordsViewModel model)
     {
+        Console.Out.WriteLine($"in post : {model.AppointmentId}");
+        
         if (!ModelState.IsValid)
         {
             var medicationsList = await _context.Medications.ToListAsync();
@@ -115,49 +122,80 @@ public class DoctorController : Controller
             });
             return View(model);
         }
-        
-        Console.Out.WriteLine($"Adding Medical Records: {model.MedicationsList.Count()}");
 
-        var appointment = await _context.Appointments
-            .Include(a => a.Patient)
-            .FirstOrDefaultAsync(a => a.Id == model.AppointmentId);
-        if (appointment == null)
+        try
         {
+            var medicalRecords = await _doctorService.AddMedicalRecordsAsync(
+                model.AppointmentId,
+                model.Description,
+                model.Diagnosis,
+                model.MedicationID,
+                model.NameMedication,
+                model.DescriptionMedication);
+            
+            Console.Out.WriteLine("Medical records added.");
+            Console.Out.WriteLine($"Medical records added: {medicalRecords.Description}");
+            Console.Out.WriteLine($"Medical records added: {medicalRecords.Diagnosis}");
+            
+            return RedirectToAction("DoctorPage", "Doctor");
+        }
+        catch (Exception ex)
+        {
+            Console.Out.WriteLine($"Error: {ex.Message}");
+            Console.Out.WriteLine($"Call stack: {ex.StackTrace}");
+            if (ex.InnerException != null)
+            {
+                Console.Out.WriteLine($"Internal error: {ex.InnerException.Message}");
+            }
+
+            ModelState.AddModelError("", "An unknown error has occurred. Please try again later.");
+        }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ShowMedicalRecords(long id) // это айдишником пока что бцдет пациенат
+    {
+        Console.Out.WriteLine($"in show records : {id}");
+        if (id <= 0)
+        {
+            _logger.LogWarning("Invalid patient ID in show medical records.");
             return NotFound();
         }
-        
-        Console.Out.WriteLine($"Adding Medical Records: {appointment.Id}");
 
-        var medicalRecord = new MedicalRecords
-        {
-            Description = model.Description,
-            Diagnosis = model.Diagnosis,
-            CreatedAt = DateTime.UtcNow,
-            UpdateAt = DateTime.UtcNow,
-            Id = appointment.Id
-        };
-        
-        Console.Out.WriteLine($"Ae: {model.Description}");
-        Console.Out.WriteLine($"ARecords: {model.Diagnosis}");
+        var patient = await _context.Patients
+            .AsNoTracking()
+            .Include(p => p.Appointments)
+            .ThenInclude(appt => appt.MedicalRecords)
+            .ThenInclude(mr => mr.MedicalRecordMedications)
+            .ThenInclude(mrm => mrm.Medication)
+            .FirstOrDefaultAsync(p => p.Id == id);
 
-        if (model.SelectedMedicationIds != null && model.SelectedMedicationIds.Any())
+        if (patient == null)
         {
-            foreach (var medicationId in model.SelectedMedicationIds)
-            {
-                var medication = await _context.Medications.FindAsync(medicationId);
-                // if (medication != null)
-                // {
-                //     medicalRecord.MedicalRecordMedications.Add(new MedicalRecordMedication
-                //     {
-                //         MedicationId = medicationId,
-                //         Medication = medication
-                //     });
-                // }
-            }
+            _logger.LogWarning($"Patient with ID {id} not found.");
+            return NotFound();
         }
 
-        _context.MedicalRecords.Add(medicalRecord);
-        await _context.SaveChangesAsync();
-        return RedirectToAction("DoctorPage", "Doctor");
+        var medicalRecordsViewModel = patient.Appointments
+            .SelectMany(appt => appt.MedicalRecords, (appt, mr) => new { appt, mr })
+            .SelectMany(record => record.mr.MedicalRecordMedications, (record, mrm) => new AddMedicalRecordsViewModel
+            {
+                Description = record.mr.Description,
+                Diagnosis = record.mr.Diagnosis,
+                NameMedication = mrm.Medication?.Name ?? "not found",
+                DescriptionMedication = mrm.Medication?.Description ?? "not found",
+            })
+            .ToList();
+
+        var viewModel = new MedicalHistoryViewModel
+        {
+            PatientId = patient.Id,
+            PatientName = patient.FirstName,
+            PatientSurname = patient.FamilyName,
+            MedicalRecords = medicalRecordsViewModel
+        };
+
+        return View(viewModel);
     }
 }

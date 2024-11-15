@@ -26,5 +26,10 @@ public class MedicalRecordsConfiguration : IEntityTypeConfiguration<MedicalRecor
             .HasMany(mr => mr.MedicalRecordMedications)
             .WithOne(mrm => mrm.MedicalRecord)
             .HasForeignKey(mrm => mrm.MedicalRecordId);
+        
+        builder.HasOne(mr => mr.Appointment)
+            .WithMany(a => a.MedicalRecords)
+            .HasForeignKey(mr => mr.AppointmentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

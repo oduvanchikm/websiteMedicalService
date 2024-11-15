@@ -5,7 +5,7 @@ using CourseWorkDataBase.Helpers;
 using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 
-namespace CourseWorkDataBase.Data;
+namespace CourseWorkDataBase.Services;
 
 public class AdminService
 {

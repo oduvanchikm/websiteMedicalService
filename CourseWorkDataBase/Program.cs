@@ -4,7 +4,7 @@ using CourseWorkDataBase.Data;
 using Microsoft.AspNetCore.Identity;
 using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.Helpers;
-using CourseWorkDataBase.Models;
+using CourseWorkDataBase.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +16,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Authorization/AuthorizationPage";
         options.AccessDeniedPath = "/Authorization/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromHours(1); // Настройте срок действия куки
+        options.ExpireTimeSpan = TimeSpan.FromHours(1); 
         options.SlidingExpiration = true;
     });
 
@@ -28,6 +28,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddScoped<AdminService>();
+builder.Services.AddScoped<DoctorService>();
 builder.Services.AddScoped<RegistrationService>();
 builder.Services.AddScoped<AuthorizationService>();
 builder.Services.AddScoped<SlotInitializer>();

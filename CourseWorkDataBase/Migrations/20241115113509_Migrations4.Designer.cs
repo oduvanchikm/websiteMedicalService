@@ -3,6 +3,7 @@ using System;
 using CourseWorkDataBase.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CourseWorkDataBase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241115113509_Migrations4")]
+    partial class Migrations4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,6 +39,9 @@ namespace CourseWorkDataBase.Migrations
                     b.Property<DateTimeOffset>("Date")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<long?>("MedicalRecordsId")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("PatientId")
                         .HasColumnType("bigint");
 
@@ -45,6 +51,9 @@ namespace CourseWorkDataBase.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentSlotId")
+                        .IsUnique();
+
+                    b.HasIndex("MedicalRecordsId")
                         .IsUnique();
 
                     b.HasIndex("PatientId");
@@ -187,9 +196,6 @@ namespace CourseWorkDataBase.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("AppointmentId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -205,8 +211,6 @@ namespace CourseWorkDataBase.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AppointmentId");
 
                     b.ToTable("MedicalRecords");
                 });
@@ -404,6 +408,10 @@ namespace CourseWorkDataBase.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("CourseWorkDataBase.Models.MedicalRecords", "MedicalRecords")
+                        .WithOne("Appointments")
+                        .HasForeignKey("CourseWorkDataBase.Models.Appointment", "MedicalRecordsId");
+
                     b.HasOne("CourseWorkDataBase.Models.Patient", "Patient")
                         .WithMany("Appointments")
                         .HasForeignKey("PatientId")
@@ -417,6 +425,8 @@ namespace CourseWorkDataBase.Migrations
                         .IsRequired();
 
                     b.Navigation("AppointmentSlot");
+
+                    b.Navigation("MedicalRecords");
 
                     b.Navigation("Patient");
 
@@ -479,17 +489,6 @@ namespace CourseWorkDataBase.Migrations
                     b.Navigation("Medication");
                 });
 
-            modelBuilder.Entity("CourseWorkDataBase.Models.MedicalRecords", b =>
-                {
-                    b.HasOne("CourseWorkDataBase.Models.Appointment", "Appointment")
-                        .WithMany("MedicalRecords")
-                        .HasForeignKey("AppointmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Appointment");
-                });
-
             modelBuilder.Entity("CourseWorkDataBase.Models.Patient", b =>
                 {
                     b.HasOne("CourseWorkDataBase.Models.User", "User")
@@ -512,11 +511,6 @@ namespace CourseWorkDataBase.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("CourseWorkDataBase.Models.Appointment", b =>
-                {
-                    b.Navigation("MedicalRecords");
-                });
-
             modelBuilder.Entity("CourseWorkDataBase.Models.AppointmentSlot", b =>
                 {
                     b.Navigation("Appointment")
@@ -535,6 +529,8 @@ namespace CourseWorkDataBase.Migrations
 
             modelBuilder.Entity("CourseWorkDataBase.Models.MedicalRecords", b =>
                 {
+                    b.Navigation("Appointments");
+
                     b.Navigation("MedicalRecordMedications");
                 });
 

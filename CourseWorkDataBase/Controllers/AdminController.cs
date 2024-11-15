@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using CourseWorkDataBase.Data;
+using CourseWorkDataBase.Services;
 using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.ViewModels;
 using Microsoft.EntityFrameworkCore;
