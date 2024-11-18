@@ -1,7 +1,7 @@
 @model CourseWorkDataBase.ViewModels.AddDoctorRequest
 
 @{
-    ViewData["Title"] = "AddDoctor";
+ViewData["Title"] = "AddDoctor";
 }
 
 <!DOCTYPE html>
@@ -23,7 +23,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: url('https://amcmedlife.ru/wp-content/uploads/revslider/demo-medical/slide-medical-2.jpg') no-repeat center center fixed;
+            background: url('https://milkeninstitute.org/sites/default/files/Batchlor-Elaine-hero_image-min.jpg') no-repeat center center fixed;
             background-size: cover;
             position: relative;
         }
@@ -58,7 +58,7 @@
         h2 {
             text-align: center;
             margin-bottom: 20px;
-            color: #6f42c1;
+            color: #8b5fa3;
             font-size: 28px;
             position: relative;
         }
@@ -68,7 +68,7 @@
             display: block;
             width: 50px;
             height: 3px;
-            background-color: #6f42c1;
+            background-color: #8b5fa3;
             margin: 8px auto 0;
             border-radius: 2px;
         }
@@ -89,7 +89,7 @@
 
         input:focus,
         select:focus {
-            border-color: #6f42c1;
+            border-color: #8b5fa3;
             outline: none;
             box-shadow: 0 0 5px rgba(111, 66, 193, 0.5);
         }
@@ -97,7 +97,7 @@
         button {
             width: 100%;
             padding: 12px;
-            background-color: #6f42c1;
+            background-color: #8b5fa3;
             color: #fff;
             border: none;
             border-radius: 6px;
@@ -107,7 +107,7 @@
         }
 
         button:hover {
-            background-color: #5939a1;
+            background-color: #8b5fa3;
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(89, 57, 161, 0.3);
         }
@@ -115,9 +115,36 @@
         ::placeholder {
             color: #999;
         }
+
+        .textright {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            color: #ffffff;
+            background-color: #8b5fa3;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+        
     </style>
 </head>
 <body>
+
+<div class="textright">
+    <a href=@Url.Action("AdminMainPage", "Admin") class="btn btn-pdf me-2">Back</a>
+</div>
+
 <form action="@Url.Action("AddDoctor", "Admin")" method="POST">
     @Html.AntiForgeryToken()
 

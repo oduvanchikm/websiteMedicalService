@@ -1,0 +1,105 @@
+@{
+ViewData["Title"] = "Admin Service";
+}
+
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Service</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.0)), url('https://milkeninstitute.org/sites/default/files/Batchlor-Elaine-hero_image-min.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1000px;
+            background-color: rgba(245, 245, 245, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            margin: 50px auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #8b5fa3;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            color: #ffffff;
+            background-color: #8b5fa3;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #7c4b96;
+        }
+
+        .textright {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .btn-logout {
+            background-color: #7c4b96;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background-color: #8c4b99;
+        }
+        
+    </style>
+</head>
+<body>
+<div class="textright">
+    <form action="@Url.Action("Logout", "Authorization")" method="post" class="d-inline">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-logout">Logout</button>
+    </form>
+</div>
+
+<div class="container">
+    <h1>Admin Service</h1>
+    <div class="btn-container">
+        <a href="@Url.Action("DoctorsList", "Admin")" class="btn">View All Doctors</a>
+        <a href="@Url.Action("AddDoctor", "Admin")" class="btn">Add New Doctor</a>
+        <a href="@Url.Action("СreateArchivedCopiesOfTheDatabase", "Admin")" class="btn">Create Database Backup</a>
+    </div>
+</div>
+</body>
+</html>

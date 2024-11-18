@@ -23,7 +23,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: url('https://amcmedlife.ru/wp-content/uploads/revslider/demo-medical/slide-medical-2.jpg') no-repeat center center fixed;
+            background: url('https://milkeninstitute.org/sites/default/files/Batchlor-Elaine-hero_image-min.jpg') no-repeat center center fixed;
             background-size: cover;
             position: relative;
         }
@@ -35,6 +35,7 @@
             left: 0;
             width: 100%;
             height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный чёрный фон для затемнения */
             z-index: 1;
         }
 
@@ -58,7 +59,7 @@
         h2 {
             text-align: center;
             margin-bottom: 20px;
-            color: #6f42c1;
+            color: #7c4b96;
             font-size: 28px;
             position: relative;
         }
@@ -68,7 +69,7 @@
             display: block;
             width: 50px;
             height: 3px;
-            background-color: #6f42c1;
+            background-color: #7c4b96;
             margin: 8px auto 0;
             border-radius: 2px;
         }
@@ -89,7 +90,7 @@
 
         input:focus,
         select:focus {
-            border-color: #6f42c1;
+            border-color: #7c4b96;
             outline: none;
             box-shadow: 0 0 5px rgba(111, 66, 193, 0.5);
         }
@@ -97,7 +98,7 @@
         button {
             width: 100%;
             padding: 12px;
-            background-color: #6f42c1;
+            background-color: #7c4b96;
             color: #fff;
             border: none;
             border-radius: 6px;
@@ -107,7 +108,7 @@
         }
 
         button:hover {
-            background-color: #5939a1;
+            background-color: #7c4b96;
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(89, 57, 161, 0.3);
         }
@@ -118,22 +119,27 @@
     </style>
 </head>
 <body>
-<form action="/register" method="POST">
-    <h2>User registration</h2>
-    <input type="text" name="firstName" placeholder="Name" required>
-    <input type="text" name="familyName" placeholder="Surname" required>
-    <input type="email" name="email" placeholder="Email" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <select name="gender" required>
-        <option value="">Please select gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-    </select>
-    <button type="submit">Register</button>
-    <div class="additional-options">
+
+<div class="form-container">
+    @* <div class="error-message" id="error-message" style="display: none; color: red; border: 1px solid red; padding: 10px; margin-top: 10px;"></div> *@
+    <form action="/register" method="POST">
+        <h2>User registration</h2>
+        <input type="text" name="firstName" placeholder="Name" required>
+        <input type="text" name="familyName" placeholder="Surname" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <select name="gender" required>
+            <option value="">Please select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select>
+        <button type="submit">Register</button>
         <span>Already have an account?</span>
-        <a href="@Url.Action("AuthorizationPage", "Authorization")" class="btn">Login</a>
-    </div>
-</form>
+        <div class="text-center">
+            @* <a href="@Url.Action("AuthorizationPage", "Authorization")" class="btn">Login</a> *@
+            <button type="button" onclick="window.location.href='@Url.Action("AuthorizationPage", "Authorization")'">Login</button>
+        </div>
+    </form>
+</div>
 </body>
 </html>

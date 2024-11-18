@@ -97,7 +97,7 @@ BEGIN
                 INNER JOIN
             "Appointments" a ON a."PatientId" = p."Id"
                 INNER JOIN
-            "MedicalRecords" mr ON mr."Id" = a."MedicalRecordsId"
+            "MedicalRecords" mr ON mr."Id" = a."Id"
                 LEFT JOIN
             "MedicalRecordMedications" mrm ON mrm."MedicalRecordId" = mr."Id"
                 LEFT JOIN
@@ -112,6 +112,19 @@ $$ LANGUAGE plpgsql;
 SELECT *
 FROM get_patient_medical_records(2::BIGINT);
 
-SELECT *
-FROM get_patient_medical_records(2::BIGINT);
+--admin server
+-- CREATE OR REPLACE FUNCTION AddDoctors(
+--     p_email VARCHAR,
+--     p_familyName VARCHAR,
+--     p_firstName VARCHAR, 
+--     p_personalNumber VARCHAR,
+--     p_specialtyId BIGINT,
+--     p_specialtyName VARCHAR,
+--     p_specialtyDescription TEXT,
+--     p_clinicId BIGINT,
+--     p_clinicAddress VARCHAR,
+--     p_clinicPhoneNumber VARCHAR
+-- ) 
+-- RETURNS  
 
+SELECT version();

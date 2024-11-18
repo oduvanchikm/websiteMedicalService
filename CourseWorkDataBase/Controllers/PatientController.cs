@@ -1,14 +1,12 @@
 using System.Security.Claims;
-using System.Data;
-using Npgsql;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.DAL;
-using CourseWorkDataBase.Data;
 using CourseWorkDataBase.Models;
 using CourseWorkDataBase.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
 
 namespace CourseWorkDataBase.Controllers;
 
@@ -22,6 +20,13 @@ public class PatientController : Controller
     {
         _context = context;
         _logger = logger;
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync();
+        return RedirectToAction("AuthorizationPage", "Authorization");
     }
     
     public async Task<IEnumerable<DoctorDTO>> GetDoctorsBySpecialtyAsync(long? specialtyId)

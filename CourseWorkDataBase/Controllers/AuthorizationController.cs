@@ -75,7 +75,7 @@ public class AuthorizationController : Controller
         switch (userRole)
         {
             case UserRole.Admin:
-                return RedirectToAction("DoctorsList", "Admin");
+                return RedirectToAction("AdminMainPage", "Admin");
             case UserRole.Doctor:
                 return RedirectToAction("DoctorPage", "Doctor");
             case UserRole.Patient:
@@ -94,5 +94,4 @@ public class AuthorizationController : Controller
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("AuthorizationPage", "Authorization");
     }
-
 }

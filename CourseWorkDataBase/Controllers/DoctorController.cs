@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using CourseWorkDataBase.DAL;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using CourseWorkDataBase.Services;
 using CourseWorkDataBase.ViewModels;
@@ -23,6 +24,13 @@ public class DoctorController : Controller
         _context = context;
         _logger = logger;
         _doctorService = doctorService;
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync();
+        return RedirectToAction("AuthorizationPage", "Authorization");
     }
     
     private long GetCurrentUserId()
