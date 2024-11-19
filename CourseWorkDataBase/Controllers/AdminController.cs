@@ -29,7 +29,6 @@ public class AdminController : Controller
     {
         _logger.LogDebug("start СreateArchivedCopiesOfTheDatabase");
         var databaseName = _context.Database.GetDbConnection().Database;
-
         var backupFolder = "/Users/oduvanchik/Desktop/CourseWorkDataBase/CourseWorkDataBase/Backups";
         var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
         var backupFileName = $"{databaseName}_{timestamp}.bak";
@@ -65,12 +64,9 @@ public class AdminController : Controller
         try
         {
             process.Start();
-
             string output = await process.StandardOutput.ReadToEndAsync();
             string error = await process.StandardError.ReadToEndAsync();
-
             process.WaitForExit();
-
             Environment.SetEnvironmentVariable("PGPASSWORD", null);
 
             if (process.ExitCode == 0)
@@ -89,6 +85,87 @@ public class AdminController : Controller
             _logger.LogError(ex, "The database backup could not be created.");
             Environment.SetEnvironmentVariable("PGPASSWORD", null);
             throw new Exception($"Exception when creating a backup: {ex.Message}");
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> RestoreArchivedCopiesOfTheDatabase(IFormFile backupFile)
+    {
+        _logger.LogDebug("start RestoreArchivedCopiesOfTheDatabase");
+        
+        if (backupFile == null || backupFile.Length == 0)
+        {
+            _logger.LogWarning("The database backup could not be created.");
+            return NotFound();
+        }
+        
+        var tempFolder = Path.GetTempPath();
+        var tempFilePath = Path.Combine(tempFolder, backupFile.FileName);
+
+        using (var fileStream = new FileStream(tempFilePath, FileMode.Create))
+        {
+            await backupFile.CopyToAsync(fileStream);
+        }
+        
+        try
+        {
+            var connection = (Npgsql.NpgsqlConnection)_context.Database.GetDbConnection();
+            var builder = new Npgsql.NpgsqlConnectionStringBuilder(connection.ConnectionString);
+
+            var host = builder.Host;
+            var port = builder.Port;
+            var userName = builder.Username;
+            var password = builder.Password;
+            var databaseName = builder.Database;
+
+            var pgRestorePath = "/opt/homebrew/bin/pg_restore";
+
+            Environment.SetEnvironmentVariable("PGPASSWORD", password);
+
+            var arguments = $"-h {host} -p {port} -U {userName} -d {databaseName} -c \"{tempFilePath}\"";
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = pgRestorePath,
+                    Arguments = arguments,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+
+            string output = await process.StandardOutput.ReadToEndAsync();
+            string error = await process.StandardError.ReadToEndAsync();
+
+            process.WaitForExit();
+            Environment.SetEnvironmentVariable("PGPASSWORD", null);
+
+            System.IO.File.Delete(tempFilePath);
+
+            if (process.ExitCode == 0)
+            {
+                return Ok("База данных успешно восстановлена из резервной копии.");
+            }
+            else
+            {
+                return BadRequest($"Ошибка при восстановлении базы данных: {error}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Environment.SetEnvironmentVariable("PGPASSWORD", null);
+
+            if (System.IO.File.Exists(tempFilePath))
+            {
+                System.IO.File.Delete(tempFilePath);
+            }
+
+            return BadRequest($"Исключение при восстановлении базы данных: {ex.Message}");
         }
     }
 
@@ -213,7 +290,7 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> DeleteDoctor(long id)
     {
-        // TODO ОНО НЕПРАВИЛЬНО НЕ РАБОТАЕТ
+        // TODO ОНО НЕПРАВИЛЬНО НЕ РАБОТАЕТ НЕ РАБОТАЕТ НЕ РАБОТАЕТ НЕ РАБОТАЕТ
         Console.Out.WriteLine("Delete Doctor1");
         var doctor = await _context.Doctors
             .Include(d => d.User)
@@ -241,6 +318,7 @@ public class AdminController : Controller
         await _context.SaveChangesAsync();
 
         return RedirectToAction("DoctorsList", "Admin");
+        // TODO ОНО НЕПРАВИЛЬНО НЕ РАБОТАЕТ НЕ РАБОТАЕТ НЕ РАБОТАЕТ НЕ РАБОТАЕТ
     }
 
     [HttpGet]

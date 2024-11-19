@@ -209,6 +209,56 @@ public class PatientController : Controller
         return RedirectToAction("PatientAppointments", "Patient");
     }
 
+    public async Task<IActionResult> Show() 
+    {
+        var userId = GetCurrentUserId();
+
+        var patientid = await _context.Patients
+            .Where(p => p.UserId == userId)
+            .FirstOrDefaultAsync();
+        if (patientid == null)
+        {
+            _logger.LogWarning("Patient not found {UserId}", userId);
+            return NotFound("Patient not found.");
+        }
+        
+        Console.Out.WriteLine($"Patient {patientid.Id}");
+        
+        var patient = await _context.Patients
+            .AsNoTracking()
+            .Include(p => p.Appointments)
+            .ThenInclude(appt => appt.MedicalRecords)
+            .ThenInclude(mr => mr.MedicalRecordMedications)
+            .ThenInclude(mrm => mrm.Medication)
+            .FirstOrDefaultAsync(p => p.Id == patientid.Id);
+        if (patient == null)
+        {
+            _logger.LogWarning($"Patient with ID {patientid.Id} not found.");
+            return NotFound();
+        }
+
+        var medicalRecordsViewModel = patient.Appointments
+            .SelectMany(appt => appt.MedicalRecords, (appt, mr) => new { appt, mr })
+            .SelectMany(record => record.mr.MedicalRecordMedications, (record, mrm) => new AddMedicalRecordsViewModel
+            {
+                Description = record.mr.Description,
+                Diagnosis = record.mr.Diagnosis,
+                NameMedication = mrm.Medication?.Name ?? "not found",
+                DescriptionMedication = mrm.Medication?.Description ?? "not found",
+            })
+            .ToList();
+
+        var viewModel = new MedicalHistoryViewModel
+        {
+            PatientId = patient.Id,
+            PatientName = patient.FirstName,
+            PatientSurname = patient.FamilyName,
+            MedicalRecords = medicalRecordsViewModel
+        };
+        
+        return View(viewModel);
+    }
+
     private long GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

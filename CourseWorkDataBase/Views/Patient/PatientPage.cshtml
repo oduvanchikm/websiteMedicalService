@@ -69,6 +69,13 @@
             z-index: 100; 
         }
 
+        .textrightnew {
+            position: absolute;
+            top: 20px;
+            right: 120px;
+            z-index: 100;
+        }
+
         .btn-logout {
             background-color: #7c4b96; 
             color: white; 
@@ -87,10 +94,17 @@
 </head>
 <body>
 <div class="textright">
-<form action="@Url.Action("Logout", "Authorization")" method="post" class="d-inline">
-    @Html.AntiForgeryToken()
-    <button type="submit" class="btn btn-logout">Logout</button> 
-</form>
+    <form action="@Url.Action("Logout", "Authorization")" method="post" class="d-inline">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-logout">Logout</button> 
+    </form>
+</div>
+
+<div class="textrightnew">
+    <form action="@Url.Action("Show", "Patient")" method="post" class="d-inline">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-logout">My medical records</button>
+    </form>
 </div>
 
 <div class="container mt-5">

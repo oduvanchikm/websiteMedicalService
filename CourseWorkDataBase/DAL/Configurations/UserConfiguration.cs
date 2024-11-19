@@ -16,9 +16,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         
         builder.Property(x => x.Password)
             .IsRequired();
-
-        // builder.Property(x => x.PersonalNumber)
-        //     .IsRequired(false);
         
         builder.Property(x => x.CreatedAt)
             .IsRequired();
@@ -38,6 +35,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(d => d.User)
             .HasForeignKey<Doctor>(d => d.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        builder
+            .HasMany(u => u.UsersHistoryLogsEnumerable)
+            .WithOne(u => u.User)
+            .HasForeignKey(u => u.UserId);
         
         var fixedCreatedAt = new DateTime(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc);
 

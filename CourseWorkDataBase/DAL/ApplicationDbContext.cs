@@ -28,6 +28,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<DoctorDTO> DoctorsDto { get; set; }
     public DbSet<MedicalRecordMedication> MedicalRecordMedications { get; set; }
     
+    public DbSet<HistoryLogs> HistoryLogs { get; set; }
+    
+    public DbSet<UsersHistoryLogs> UsersHistoryLogs { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new RoleConfiguration());
@@ -43,6 +47,8 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new MedicalRecordsConfiguration());
         modelBuilder.ApplyConfiguration(new MedicationsConfiguration());
         modelBuilder.ApplyConfiguration(new MedicalRecordMedicationConfiguration());
+        modelBuilder.ApplyConfiguration(new HistoryLogsConfiguration());
+        modelBuilder.ApplyConfiguration(new UsersHistoryLogsConfiguration());
         
         base.OnModelCreating(modelBuilder);
         

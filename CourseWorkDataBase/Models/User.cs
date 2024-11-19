@@ -13,8 +13,6 @@ public class User
     
     public string Password { get; set; }
     
-    // public string? PersonalNumber { get; set; }
-    
     public Role Role { get; set; }
     public long RoleId { get; set; }
     
@@ -23,4 +21,6 @@ public class User
     public Patient? Patient { get; set; }
     
     public Doctor? Doctor { get; set; }
+    
+    public IEnumerable<UsersHistoryLogs> UsersHistoryLogsEnumerable { get; set; }
 }

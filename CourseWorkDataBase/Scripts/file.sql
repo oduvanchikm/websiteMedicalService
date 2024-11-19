@@ -1,3 +1,4 @@
+-- GET SPECIALTY
 CREATE OR REPLACE FUNCTION GetDoctorsBySpecialty(p_SpecialtyId BIGINT)
     RETURNS TABLE
             (
@@ -24,9 +25,9 @@ SELECT *
 FROM GetDoctorsBySpecialty(0);
 SELECT *
 FROM GetDoctorsBySpecialty(1);
+--
 
-
-
+-- BOOK APPOINTMENT
 CREATE OR REPLACE PROCEDURE BookAppointment(
     p_SlotId BIGINT,
     p_PatientId BIGINT
@@ -55,23 +56,24 @@ EXCEPTION
         RAISE EXCEPTION 'An error occurred during booking: %', SQLERRM;
 END;
 $$;
+--
 
-
+-- GET MEDICAL RECORDS IN DOCTOR PAGE
 DROP FUNCTION IF EXISTS get_patient_medical_records(BIGINT);
-
+-- не работает естестевенно 
 CREATE OR REPLACE FUNCTION get_patient_medical_records(p_patient_id BIGINT)
     RETURNS TABLE
             (
-                patient_id                   BIGINT,
-                first_name                   TEXT,
-                family_name                  TEXT,
-                appointment_id               BIGINT,
-                medical_record_id            BIGINT,
-                medical_record_description   TEXT,
-                diagnosis                    TEXT,
-                medication_id                BIGINT,
-                medication_name              TEXT,
-                medication_description       TEXT
+                patient_id                 BIGINT,
+                first_name                 TEXT,
+                family_name                TEXT,
+                appointment_id             BIGINT,
+                medical_record_id          BIGINT,
+                medical_record_description TEXT,
+                diagnosis                  TEXT,
+                medication_id              BIGINT,
+                medication_name            TEXT,
+                medication_description     TEXT
             )
 AS
 $$
@@ -81,50 +83,253 @@ BEGIN
     END IF;
 
     RETURN QUERY
-        SELECT
-            p."Id"                          AS patient_id,
-            p."FirstName"::TEXT             AS first_name,
-            p."FamilyName"::TEXT            AS family_name,
-            a."Id"                          AS appointment_id,
-            mr."Id"                         AS medical_record_id,
-            mr."Description"::TEXT          AS medical_record_description,
-            mr."Diagnosis"::TEXT            AS diagnosis,
-            mrm."MedicationId"              AS medication_id,
-            m."Name"::TEXT                  AS medication_name,
-            m."Description"::TEXT           AS medication_description
-        FROM
-            "Patients" p
-                INNER JOIN
-            "Appointments" a ON a."PatientId" = p."Id"
-                INNER JOIN
-            "MedicalRecords" mr ON mr."Id" = a."Id"
-                LEFT JOIN
-            "MedicalRecordMedications" mrm ON mrm."MedicalRecordId" = mr."Id"
-                LEFT JOIN
-            "Medications" m ON m."MedicationId" = mrm."MedicationId"  
-        WHERE
-            p."Id" = p_patient_id
-        ORDER BY
-            a."Id", mr."Id", m."MedicationId"; 
+        SELECT p."Id"                 AS patient_id,
+               p."FirstName"::TEXT    AS first_name,
+               p."FamilyName"::TEXT   AS family_name,
+               a."Id"                 AS appointment_id,
+               mr."Id"                AS medical_record_id,
+               mr."Description"::TEXT AS medical_record_description,
+               mr."Diagnosis"::TEXT   AS diagnosis,
+               mrm."MedicationId"     AS medication_id,
+               m."Name"::TEXT         AS medication_name,
+               m."Description"::TEXT  AS medication_description
+        FROM "Patients" p
+                 INNER JOIN
+             "Appointments" a ON a."PatientId" = p."Id"
+                 INNER JOIN
+             "MedicalRecords" mr ON mr."Id" = a."Id"
+                 LEFT JOIN
+             "MedicalRecordMedications" mrm ON mrm."MedicalRecordId" = mr."Id"
+                 LEFT JOIN
+             "Medications" m ON m."MedicationId" = mrm."MedicationId"
+        WHERE p."Id" = p_patient_id
+        ORDER BY a."Id", mr."Id", m."MedicationId";
 END;
 $$ LANGUAGE plpgsql;
 
 SELECT *
 FROM get_patient_medical_records(2::BIGINT);
-
---admin server
--- CREATE OR REPLACE FUNCTION AddDoctors(
---     p_email VARCHAR,
---     p_familyName VARCHAR,
---     p_firstName VARCHAR, 
---     p_personalNumber VARCHAR,
---     p_specialtyId BIGINT,
---     p_specialtyName VARCHAR,
---     p_specialtyDescription TEXT,
---     p_clinicId BIGINT,
---     p_clinicAddress VARCHAR,
---     p_clinicPhoneNumber VARCHAR
--- ) 
--- RETURNS  
+--
 
 SELECT version();
+
+--веселье с триггерами
+-- TRIGGER USER TABLE
+CREATE OR REPLACE FUNCTION UserTriggerFunction()
+    RETURNS TRIGGER AS
+$$
+DECLARE
+    UserId        BIGINT;
+    HistoryLogId  BIGINT;
+    TableName     TEXT;
+    OperationType TEXT;
+
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+
+        UserId := NEW."Id";
+        TableName := TG_TABLE_NAME;
+        OperationType := 'INSERT';
+
+        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
+        VALUES (TableName,
+                OperationType,
+                NOW())
+        RETURNING "Id" INTO HistoryLogId;
+
+        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
+        VALUES (HistoryLogId, UserId);
+
+        RETURN NEW;
+
+    ELSIF TG_OP = 'UPDATE' THEN
+
+        UserId := NEW."Id";
+        TableName := TG_TABLE_NAME;
+        OperationType := 'UPDATE';
+
+        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
+        VALUES (TableName,
+                OperationType,
+                NOW())
+        RETURNING "Id" INTO HistoryLogId;
+
+        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
+        VALUES (HistoryLogId, UserId);
+
+        RETURN NEW;
+
+    ELSIF TG_OP = 'DELETE' THEN
+
+        UserId := OLD."Id";
+        TableName := TG_TABLE_NAME;
+        OperationType := 'DELETE';
+
+        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
+        VALUES (TableName,
+                OperationType,
+                NOW())
+        RETURNING "Id" INTO HistoryLogId;
+
+        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
+        VALUES (HistoryLogId, UserId);
+
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER UserTrigger
+    AFTER INSERT OR UPDATE OR DELETE
+    ON "Users"
+    FOR EACH ROW
+EXECUTE PROCEDURE UserTriggerFunction();
+
+SELECT *
+FROM "HistoryLogs";
+SELECT *
+FROM "UsersHistoryLogs";
+--
+
+-- TRIGGER PATIENT TALE
+CREATE OR REPLACE FUNCTION PatientTriggerFunction()
+    RETURNS TRIGGER AS
+$$
+DECLARE
+    UserId        BIGINT;
+    HistoryLogId  BIGINT;
+    TableName     TEXT;
+    OperationType TEXT;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UserId := NEW."UserId";
+        TableName := TG_TABLE_NAME;
+        OperationType := 'INSERT';
+
+        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
+        VALUES (TableName,
+                OperationType,
+                NOW())
+        RETURNING "Id" INTO HistoryLogId;
+
+        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
+        VALUES (HistoryLogId, UserId);
+        RETURN NEW;
+
+    ELSIF TG_OP = 'UPDATE' THEN
+        UserId := NEW."UserId";
+        TableName := TG_TABLE_NAME;
+        OperationType := 'UPDATE';
+
+        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
+        VALUES (TableName,
+                OperationType,
+                NOW())
+        RETURNING "Id" INTO HistoryLogId;
+
+        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
+        VALUES (HistoryLogId, UserId);
+        RETURN NEW;
+
+    ELSIF TG_OP = 'DELETE' THEN
+        UserId := OLD."UserId";
+        TableName := TG_TABLE_NAME;
+        OperationType := 'DELETE';
+
+        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
+        VALUES (TableName,
+                OperationType,
+                NOW())
+        RETURNING "Id" INTO HistoryLogId;
+
+        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
+        VALUES (HistoryLogId, UserId);
+        RETURN OLD;
+
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER PatientTrigger
+    AFTER INSERT OR UPDATE OR DELETE
+    ON "Patients"
+    FOR EACH ROW
+EXECUTE PROCEDURE PatientTriggerFunction();
+
+SELECT *
+FROM "HistoryLogs";
+SELECT *
+FROM "UsersHistoryLogs";
+--
+
+-- TRIGGER DOCTORS TABLE
+CREATE OR REPLACE FUNCTION DoctorTriggerFunction()
+    RETURNS TRIGGER AS
+$$
+DECLARE
+    UserId        BIGINT;
+    HistoryLogId  BIGINT;
+    TableName     TEXT;
+    OperationType TEXT;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UserId := NEW."UserId";
+        TableName := TG_TABLE_NAME;
+        OperationType := 'INSERT';
+
+        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
+        VALUES (TableName,
+                OperationType,
+                NOW())
+        RETURNING "Id" INTO HistoryLogId;
+
+        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
+        VALUES (HistoryLogId, UserId);
+        RETURN NEW;
+
+    ELSIF TG_OP = 'UPDATE' THEN
+        UserId := NEW."UserId";
+        TableName := TG_TABLE_NAME;
+        OperationType := 'UPDATE';
+
+        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
+        VALUES (TableName,
+                OperationType,
+                NOW())
+        RETURNING "Id" INTO HistoryLogId;
+
+        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
+        VALUES (HistoryLogId, UserId);
+        RETURN NEW;
+
+    ELSIF TG_OP = 'DELETE' THEN
+        UserId := OLD."UserId";
+        TableName := TG_TABLE_NAME;
+        OperationType := 'DELETE';
+
+        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
+        VALUES (TableName,
+                OperationType,
+                NOW())
+        RETURNING "Id" INTO HistoryLogId;
+
+        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
+        VALUES (HistoryLogId, UserId);
+        RETURN OLD;
+
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER DoctorTrigger
+    AFTER INSERT OR UPDATE OR DELETE
+    ON "Doctors"
+    FOR EACH ROW
+EXECUTE PROCEDURE DoctorTriggerFunction();
+
+SELECT *
+FROM "HistoryLogs";
+SELECT *
+FROM "UsersHistoryLogs";
