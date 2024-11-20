@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CourseWorkDataBase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241119132523_AddPatientHistoryTrigger")]
-    partial class AddPatientHistoryTrigger
+    [Migration("20241120103019_AddPatientTriggers")]
+    partial class AddPatientTriggers
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

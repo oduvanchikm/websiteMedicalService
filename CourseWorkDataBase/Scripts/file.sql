@@ -113,7 +113,7 @@ FROM get_patient_medical_records(2::BIGINT);
 
 SELECT version();
 
---веселье с триггерами
+-- триггеры :)
 -- TRIGGER USER TABLE
 CREATE OR REPLACE FUNCTION UserTriggerFunction()
     RETURNS TRIGGER AS
@@ -126,7 +126,6 @@ DECLARE
 
 BEGIN
     IF TG_OP = 'INSERT' THEN
-
         UserId := NEW."Id";
         TableName := TG_TABLE_NAME;
         OperationType := 'INSERT';
@@ -178,7 +177,6 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER UserTrigger
@@ -192,6 +190,8 @@ FROM "HistoryLogs";
 SELECT *
 FROM "UsersHistoryLogs";
 --
+
+DROP TRIGGER IF EXISTS UserTrigger ON "Users";
 
 -- TRIGGER PATIENT TALE
 CREATE OR REPLACE FUNCTION PatientTriggerFunction()
@@ -264,18 +264,24 @@ SELECT *
 FROM "UsersHistoryLogs";
 --
 
+
+DROP TRIGGER IF EXISTS PatientTrigger ON "Patients";
+
 -- TRIGGER DOCTORS TABLE
-CREATE OR REPLACE FUNCTION DoctorTriggerFunction()
+CREATE OR REPLACE FUNCTION DoctorClinicTriggerFunction()
     RETURNS TRIGGER AS
 $$
 DECLARE
     UserId        BIGINT;
     HistoryLogId  BIGINT;
+    DoctorId      BIGINT DEFAULT NULL;
+    ClinicId      BIGINT DEFAULT NULL;
     TableName     TEXT;
     OperationType TEXT;
 BEGIN
     IF TG_OP = 'INSERT' THEN
         UserId := NEW."UserId";
+        DoctorId := NEW."ID";
         TableName := TG_TABLE_NAME;
         OperationType := 'INSERT';
 
@@ -327,9 +333,29 @@ CREATE TRIGGER DoctorTrigger
     AFTER INSERT OR UPDATE OR DELETE
     ON "Doctors"
     FOR EACH ROW
-EXECUTE PROCEDURE DoctorTriggerFunction();
+EXECUTE PROCEDURE DoctorClinicTriggerFunction();
 
 SELECT *
 FROM "HistoryLogs";
 SELECT *
 FROM "UsersHistoryLogs";
+
+DROP TRIGGER IF EXISTS DoctorTrigger ON "Doctors";
+
+select *
+from "Users";
+
+SELECT "UserId" AS userId
+FROM "Doctors"
+WHERE "ID" = (SELECT "ID"
+              FROM "Doctors"
+              WHERE "ClinicId" = 3);
+
+select *
+from "Clinics";
+
+select *
+from "Doctors";
+
+select *
+from "Users";

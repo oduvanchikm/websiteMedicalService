@@ -18,8 +18,5 @@ public class Appointment
     public Status Status { get; set; }
     public long StatusId { get; set; }
     
-    // public long? MedicalRecordsId { get; set; }
-    // public MedicalRecords? MedicalRecords { get; set; }
-    
     public ICollection<MedicalRecords> MedicalRecords { get; set; }
 }

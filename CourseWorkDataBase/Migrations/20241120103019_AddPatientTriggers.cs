@@ -5,13 +5,13 @@
 namespace CourseWorkDataBase.Migrations
 {
     /// <inheritdoc />
-    public partial class AddPatientHistoryTrigger : Migration
+    public partial class AddPatientTriggers : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             var createFunction = @"
-           CREATE OR REPLACE FUNCTION PatientTriggerFunction()
+CREATE OR REPLACE FUNCTION PatientTriggerFunction()
     RETURNS TRIGGER AS
 $$
 DECLARE
@@ -68,19 +68,18 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
-           ";
+            ";
+            
+            migrationBuilder.Sql(createFunction);
 
-           migrationBuilder.Sql(createFunction);
-
-           var createTrigger = @"
-           CREATE TRIGGER PatientTrigger
+            var createTrigger = @"
+CREATE TRIGGER PatientTrigger
     AFTER INSERT OR UPDATE OR DELETE
     ON ""Patients""
     FOR EACH ROW
 EXECUTE PROCEDURE PatientTriggerFunction();
-           ";
-
-           migrationBuilder.Sql(createTrigger);
+";
+            migrationBuilder.Sql(createTrigger);
         }
 
         /// <inheritdoc />

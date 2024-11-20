@@ -93,7 +93,7 @@ public class AdminService
                     clinic = new Clinic
                     {
                         Address = clinicAddress.Trim(),
-                        PhoneNumber = clinicPhoneNumber?.Trim()
+                        PhoneNumber = clinicPhoneNumber?.Trim(),
                     };
                     
                     Console.Out.WriteLine("A new clinic has created with ID: " + clinic.Id);
@@ -130,7 +130,7 @@ public class AdminService
                     specialty = new Specialty
                     {
                         NameSpecialty = specialtyName.Trim(),
-                        Description = specialtyDescription?.Trim()
+                        Description = specialtyDescription?.Trim(),
                     };
                 
                     _context.Specialties.Add(specialty);

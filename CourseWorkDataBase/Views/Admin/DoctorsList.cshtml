@@ -142,7 +142,7 @@
     <a href=@Url.Action("AdminMainPage", "Admin") class="btn btn-pdf me-2">Back</a>
 </div>
 
-<div class="table-container">
+<div class="table-container" style="max-height: 800px; overflow-y: auto;">
     <h2 class="text-center">List of Doctors</h2>
     @Html.AntiForgeryToken()
     <table>
