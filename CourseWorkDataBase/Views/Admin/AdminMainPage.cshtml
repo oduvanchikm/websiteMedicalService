@@ -1,5 +1,5 @@
 @{
-ViewData["Title"] = "Admin Service";
+    ViewData["Title"] = "Admin Service";
 }
 
 <!DOCTYPE html>
@@ -99,6 +99,10 @@ ViewData["Title"] = "Admin Service";
         <a href="@Url.Action("DoctorsList", "Admin")" class="btn">View All Doctors</a>
         <a href="@Url.Action("AddDoctor", "Admin")" class="btn">Add New Doctor</a>
         <a href="@Url.Action("СreateArchivedCopiesOfTheDatabase", "Admin")" class="btn">Create Database Backup</a>
+        <a href="@Url.Action("RestoreDataBase", "Admin")"
+           class="btn">
+            Restore Database Backup
+        </a>
     </div>
 </div>
 </body>

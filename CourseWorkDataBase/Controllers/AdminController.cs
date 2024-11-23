@@ -7,10 +7,11 @@ using CourseWorkDataBase.Services;
 using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using CourseWorkDataBase.Helpers;
 
 namespace CourseWorkDataBase.Controllers;
 
-[Authorize]
+[Authorize ("AdminPolicy")]
 public class AdminController : Controller
 {
     private readonly AdminService _adminService;
@@ -25,12 +26,20 @@ public class AdminController : Controller
     }
 
     [HttpGet]
+    public IActionResult RestoreDataBase()
+    {
+        return View();
+    }
+
+    [HttpGet]
     public async Task<IActionResult> СreateArchivedCopiesOfTheDatabase()
     {
         _logger.LogDebug("start СreateArchivedCopiesOfTheDatabase");
         var databaseName = _context.Database.GetDbConnection().Database;
+
         var backupFolder = "/Users/oduvanchik/Desktop/CourseWorkDataBase/CourseWorkDataBase/Backups";
         var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+
         var backupFileName = $"{databaseName}_{timestamp}.bak";
         var backupPath = Path.Combine(backupFolder, backupFileName);
 
@@ -64,7 +73,6 @@ public class AdminController : Controller
         try
         {
             process.Start();
-            string output = await process.StandardOutput.ReadToEndAsync();
             string error = await process.StandardError.ReadToEndAsync();
             process.WaitForExit();
             Environment.SetEnvironmentVariable("PGPASSWORD", null);
@@ -89,40 +97,63 @@ public class AdminController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> RestoreArchivedCopiesOfTheDatabase(IFormFile backupFile)
+    public IActionResult GetAvailableBackups()
     {
-        _logger.LogDebug("start RestoreArchivedCopiesOfTheDatabase");
-        
-        if (backupFile == null || backupFile.Length == 0)
-        {
-            _logger.LogWarning("The database backup could not be created.");
-            return NotFound();
-        }
-        
-        var tempFolder = Path.GetTempPath();
-        var tempFilePath = Path.Combine(tempFolder, backupFile.FileName);
+        _logger.LogDebug("Retrieving a list of available database backups.");
+        var backupFolder = "/Users/oduvanchik/Desktop/CourseWorkDataBase/CourseWorkDataBase/Backups";
 
-        using (var fileStream = new FileStream(tempFilePath, FileMode.Create))
+        var backupFiles = Directory.GetFiles(backupFolder)
+            .Select(Path.GetFileName)
+            .OrderByDescending(f => f)
+            .ToList();
+
+        if (!backupFiles.Any())
         {
-            await backupFile.CopyToAsync(fileStream);
+            _logger.LogInformation("Backup folder '{BackupFolder}' no backup files.", backupFolder);
+            return Ok(new List<string>());
         }
-        
+
+        _logger.LogInformation("Find {Count} backup files in folder '{BackupFolder}'.", backupFiles.Count,
+            backupFolder);
+        return Ok(backupFiles);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> RestoreArchivedCopiesOfTheDatabase(string backupFile)
+    {
+        _logger.LogDebug("Starting database restoration process.");
+
+        if (string.IsNullOrWhiteSpace(backupFile))
+        {
+            _logger.LogWarning("No backup file specified.");
+            return BadRequest("No backup file specified.");
+        }
+
+        string pathFile = Path.Combine("/Users/oduvanchik/Desktop/CourseWorkDataBase/CourseWorkDataBase/Backups",
+            backupFile);
+
+        if (!System.IO.File.Exists(pathFile))
+        {
+            _logger.LogWarning($"Backup file '{pathFile}' does not exist.");
+            return NotFound("Backup file not found.");
+        }
+
         try
         {
             var connection = (Npgsql.NpgsqlConnection)_context.Database.GetDbConnection();
             var builder = new Npgsql.NpgsqlConnectionStringBuilder(connection.ConnectionString);
 
-            var host = builder.Host;
-            var port = builder.Port;
-            var userName = builder.Username;
-            var password = builder.Password;
-            var databaseName = builder.Database;
+            string host = builder.Host;
+            int port = builder.Port;
+            string userName = builder.Username;
+            string password = builder.Password;
+            string databaseName = builder.Database;
 
-            var pgRestorePath = "/opt/homebrew/bin/pg_restore";
+            string pgRestorePath = "/opt/homebrew/bin/pg_restore";
 
             Environment.SetEnvironmentVariable("PGPASSWORD", password);
 
-            var arguments = $"-h {host} -p {port} -U {userName} -d {databaseName} -c \"{tempFilePath}\"";
+            string arguments = $"-h {host} -p {port} -U {userName} -d {databaseName} -c \"{pathFile}\"";
 
             var process = new Process
             {
@@ -137,35 +168,37 @@ public class AdminController : Controller
                 }
             };
 
+            _logger.LogDebug($"debug: {pgRestorePath}");
             process.Start();
-
-            string output = await process.StandardOutput.ReadToEndAsync();
             string error = await process.StandardError.ReadToEndAsync();
 
             process.WaitForExit();
-            Environment.SetEnvironmentVariable("PGPASSWORD", null);
 
-            System.IO.File.Delete(tempFilePath);
+            Environment.SetEnvironmentVariable("PGPASSWORD", null);
 
             if (process.ExitCode == 0)
             {
-                return Ok("База данных успешно восстановлена из резервной копии.");
+                _logger.LogInformation("Database backup restored successfully.");
+                System.IO.File.Delete(pathFile);
+                return RedirectToAction("AdminMainPage", "Admin");
             }
             else
             {
-                return BadRequest($"Ошибка при восстановлении базы данных: {error}");
+                _logger.LogError($"Error restoring database backup. Exit code: {process.ExitCode}, Error: {error}");
+                throw new Exception($"Error restoring backup. Details: {error}");
             }
         }
         catch (Exception ex)
         {
+            _logger.LogError($"Exception occurred during database restoration: {ex.Message}");
             Environment.SetEnvironmentVariable("PGPASSWORD", null);
-
-            if (System.IO.File.Exists(tempFilePath))
+            if (System.IO.File.Exists(pathFile))
             {
-                System.IO.File.Delete(tempFilePath);
+                _logger.LogWarning($"Deleting backup file at '{pathFile}' due to error.");
+                System.IO.File.Delete(pathFile);
             }
 
-            return BadRequest($"Исключение при восстановлении базы данных: {ex.Message}");
+            return BadRequest($"Exception during database restoration: {ex.Message}");
         }
     }
 
@@ -287,39 +320,7 @@ public class AdminController : Controller
         return View(model);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> DeleteDoctor(long id)
-    {
-        // TODO ОНО НЕПРАВИЛЬНО НЕ РАБОТАЕТ НЕ РАБОТАЕТ НЕ РАБОТАЕТ НЕ РАБОТАЕТ
-        Console.Out.WriteLine("Delete Doctor1");
-        var doctor = await _context.Doctors
-            .Include(d => d.User)
-            .FirstOrDefaultAsync(d => d.ID == id);
 
-        Console.Out.WriteLine("Delete Doctor2");
-
-        if (doctor == null)
-        {
-            Console.Out.WriteLine("Doctor not found");
-            return NotFound();
-        }
-
-        _context.Doctors.Remove(doctor);
-
-        Console.Out.WriteLine("Delete Doctor3");
-
-        if (doctor.User != null)
-        {
-            _context.Users.Remove(doctor.User);
-            Console.Out.WriteLine("Delete Doctor4");
-        }
-
-        Console.Out.WriteLine("Delete Doctor5");
-        await _context.SaveChangesAsync();
-
-        return RedirectToAction("DoctorsList", "Admin");
-        // TODO ОНО НЕПРАВИЛЬНО НЕ РАБОТАЕТ НЕ РАБОТАЕТ НЕ РАБОТАЕТ НЕ РАБОТАЕТ
-    }
 
     [HttpGet]
     public async Task<IActionResult> DoctorsList()

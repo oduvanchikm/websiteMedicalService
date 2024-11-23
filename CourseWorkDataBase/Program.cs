@@ -86,28 +86,4 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.MapControllerRoute(
-    name: "authorize",
-    pattern: "{controller=Authorization}/{action=AuthorizationPage}/{id?}");
-
-app.MapControllerRoute(
-    name: "register",
-    pattern: "{controller=Register}/{action=RegisterPage}/{id?}");
-
-app.MapControllerRoute(
-    name: "doctor",
-    pattern: "{controller=Doctor}/{action=DoctorPage}/{id?}");
-
-app.MapControllerRoute(
-    name: "patient",
-    pattern: "{controller=Patient}/{action=PatientPage}/{id?}");
-
-app.MapControllerRoute(
-    name: "admin/add",
-    pattern: "{controller=Admin}/{action=AddDoctor}/{id?}");
-
-app.MapControllerRoute(
-    name: "admin",
-    pattern: "{controller=Admin}/{action=DoctorsList}/{id?}");
-
 app.Run();

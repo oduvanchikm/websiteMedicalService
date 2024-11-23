@@ -7,10 +7,12 @@ namespace CourseWorkDataBase.Helpers;
 public class SlotInitializer
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<SlotInitializer> _logger;
 
-    public SlotInitializer(ApplicationDbContext context)
+    public SlotInitializer(ApplicationDbContext context, ILogger<SlotInitializer> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task InitializeSlotAsync()
@@ -34,8 +36,8 @@ public class SlotInitializer
                 var workStartTime = DateTime.SpecifyKind(date.AddHours(9), DateTimeKind.Utc);
                 var workEndTime = DateTime.SpecifyKind(date.AddHours(16), DateTimeKind.Utc);
 
-                var breakStartTime = DateTime.SpecifyKind(date.AddHours(13), DateTimeKind.Utc); 
-                var breakEndTime = DateTime.SpecifyKind(date.AddHours(14), DateTimeKind.Utc); 
+                var breakStartTime = DateTime.SpecifyKind(date.AddHours(13), DateTimeKind.Utc);
+                var breakEndTime = DateTime.SpecifyKind(date.AddHours(14), DateTimeKind.Utc);
 
                 var currentTime = workStartTime;
 

@@ -39,14 +39,14 @@ public class AuthorizationController : Controller
 
         if (!ModelState.IsValid)
         {
-            TempData["ErrorMessage"] = "Invalid login request.";
+            Console.Out.WriteLine("not valid");
             return RedirectToAction("AuthorizationPage", "Authorization");
         }
 
         var user = await _authService.AuthenticateUser(request.Email, request.Password);
         if (user == null)
         {
-            TempData["ErrorMessage"] = "Invalid email address or password.";
+            Console.Out.WriteLine("Wrong email address or password");
             return RedirectToAction("AuthorizationPage", "Authorization");
         }
         
