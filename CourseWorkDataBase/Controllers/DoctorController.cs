@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Controllers;
 
-[Authorize]
+[Authorize("DoctorPolicy")]
 public class DoctorController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -52,29 +52,21 @@ public class DoctorController : Controller
             _logger.LogWarning("User is not logged in.");
             return NotFound();
         }
-
-        Console.Out.WriteLine($"Current user: {userId}");
-
+        
         var doctor = await _context.Doctors
             .Where(d => d.UserId == userId)
             .FirstOrDefaultAsync();
-
         if (doctor == null)
         {
             _logger.LogWarning("Doctor is not logged in.");
             return NotFound();
         }
-    
-        Console.Out.WriteLine($"Current doctor: {doctor.ID}");
         
         var appointmentSlots = await _context.AppointmentSlots
             .Include(a => a.Appointment)
             .ThenInclude(ap => ap.Patient)
             .Where(a => a.DoctorId == doctor.ID && a.IsBooked == true)
             .ToListAsync();
-
-        Console.Out.WriteLine($"Current doctor {doctor.ID} has {appointmentSlots.Count} booked appointments.");
-
         return View(appointmentSlots);
     }
     
@@ -117,8 +109,6 @@ public class DoctorController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddMedicalRecords(AddMedicalRecordsViewModel model)
     {
-        Console.Out.WriteLine($"in post : {model.AppointmentId}");
-        
         if (!ModelState.IsValid)
         {
             var medicationsList = await _context.Medications.ToListAsync();
@@ -132,7 +122,6 @@ public class DoctorController : Controller
 
         try
         {
-            
             var medicalRecords = await _doctorService.AddMedicalRecordsAsync(
                 model.AppointmentId,
                 model.Description,
@@ -141,21 +130,14 @@ public class DoctorController : Controller
                 model.NameMedication,
                 model.DescriptionMedication);
             
-            Console.Out.WriteLine("Medical records added.");
-            Console.Out.WriteLine($"Medical records added: {medicalRecords.Description}");
-            Console.Out.WriteLine($"Medical records added: {medicalRecords.Diagnosis}");
-            
             return RedirectToAction("DoctorPage", "Doctor");
         }
         catch (Exception ex)
         {
-            Console.Out.WriteLine($"Error: {ex.Message}");
-            Console.Out.WriteLine($"Call stack: {ex.StackTrace}");
             if (ex.InnerException != null)
             {
                 Console.Out.WriteLine($"Internal error: {ex.InnerException.Message}");
             }
-
             ModelState.AddModelError("", "An unknown error has occurred. Please try again later.");
         }
         return View(model);
@@ -164,7 +146,6 @@ public class DoctorController : Controller
     [HttpGet]
     public async Task<IActionResult> ShowMedicalRecords(long id) // это айдишником пока что бцдет пациенат
     {
-        Console.Out.WriteLine($"in show records : {id}");
         if (id <= 0)
         {
             _logger.LogWarning("Invalid patient ID in show medical records.");

@@ -2,7 +2,7 @@ using CourseWorkDataBase.Models;
 using CourseWorkDataBase.DAL;
 using Microsoft.EntityFrameworkCore;
 
-namespace CourseWorkDataBase.Helpers;
+namespace CourseWorkDataBase.Services;
 
 public class SlotInitializer
 {
@@ -35,9 +35,8 @@ public class SlotInitializer
 
                 var workStartTime = DateTime.SpecifyKind(date.AddHours(9), DateTimeKind.Utc);
                 var workEndTime = DateTime.SpecifyKind(date.AddHours(16), DateTimeKind.Utc);
-
-                var breakStartTime = DateTime.SpecifyKind(date.AddHours(13), DateTimeKind.Utc);
-                var breakEndTime = DateTime.SpecifyKind(date.AddHours(14), DateTimeKind.Utc);
+                var breakStartTime = DateTime.SpecifyKind(date.AddHours(12), DateTimeKind.Utc);
+                var breakEndTime = DateTime.SpecifyKind(date.AddHours(13), DateTimeKind.Utc); 
 
                 var currentTime = workStartTime;
 

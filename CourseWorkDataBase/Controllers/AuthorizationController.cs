@@ -40,6 +40,7 @@ public class AuthorizationController : Controller
         if (!ModelState.IsValid)
         {
             Console.Out.WriteLine("not valid");
+            TempData["ErrorMessage"] = "Please fill in all fields correctly.";
             return RedirectToAction("AuthorizationPage", "Authorization");
         }
 
@@ -47,6 +48,7 @@ public class AuthorizationController : Controller
         if (user == null)
         {
             Console.Out.WriteLine("Wrong email address or password");
+            TempData["ErrorMessage"] = "Invalid email or password.";
             return RedirectToAction("AuthorizationPage", "Authorization");
         }
         
@@ -82,7 +84,6 @@ public class AuthorizationController : Controller
                 return RedirectToAction("PatientPage", "Patient");
             default:
                 _logger.LogWarning("Unknown role {RoleId} for user with email {Email}", user.RoleId, user.Email);
-                TempData["ErrorMessage"] = "Unknown user role.";
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 return RedirectToAction("AuthorizationPage", "Authorization");
         }

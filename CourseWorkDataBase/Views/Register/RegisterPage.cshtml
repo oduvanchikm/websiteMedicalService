@@ -116,12 +116,38 @@
         ::placeholder {
             color: #999;
         }
+
+        .error-message {
+            display: none;
+            color: #721c24;
+            background: linear-gradient(90deg, #f8d7da, #fbeeed);
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: fadeIn 0.4s ease-in;
+        }
+
     </style>
 </head>
 <body>
 
 <div class="form-container">
+    @if (TempData["ErrorMessage"] != null)
+    {
+    <div class="error-message" id="error-message">
+        @TempData["ErrorMessage"]
+    </div>
+    }
+    
     <div class="error-message" id="error-message" style="display: none; color: red; border: 1px solid red; padding: 10px; margin-top: 10px;"></div>
+
     <form action="/register" method="POST">
         <h2>User registration</h2>
         <input type="text" name="firstName" placeholder="Name" required>
@@ -136,7 +162,6 @@
         <button type="submit">Register</button>
         <span>Already have an account?</span>
         <div class="text-center">
-            @* <a href="@Url.Action("AuthorizationPage", "Authorization")" class="btn">Login</a> *@
             <button type="button" onclick="window.location.href='@Url.Action("AuthorizationPage", "Authorization")'">Login</button>
         </div>
     </form>

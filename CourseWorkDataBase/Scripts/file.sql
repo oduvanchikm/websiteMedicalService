@@ -1,4 +1,4 @@
--- GET SPECIALTY
+-- -- GET SPECIALTY
 CREATE OR REPLACE FUNCTION GetDoctorsBySpecialty(p_SpecialtyId BIGINT)
     RETURNS TABLE
             (
@@ -359,3 +359,9 @@ from "Doctors";
 
 select *
 from "Users";
+
+select *
+from "UsersHistoryLogs";
+
+select *
+from "Roles";

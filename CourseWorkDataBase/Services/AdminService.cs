@@ -1,7 +1,7 @@
 using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.Models;
 using CourseWorkDataBase.ViewModels;
-using CourseWorkDataBase.Helpers;
+// using CourseWorkDataBase.Helpers;
 using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,10 +41,6 @@ public class AdminService
         {
             throw new ApplicationException("Role 'Doctor' not found.");
         }
-
-        var n = "20012005";
-        var m = BCrypt.Net.BCrypt.HashPassword(n);
-        Console.Out.WriteLine("20012005 PERSONAL NUMBER" + m);
         
         var hashedPersonalNumber = BCrypt.Net.BCrypt.HashPassword(personalNumber);
         Console.Out.WriteLine(hashedPersonalNumber);

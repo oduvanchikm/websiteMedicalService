@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.Data;
-using Microsoft.AspNetCore.Identity;
 using CourseWorkDataBase.DAL;
-using CourseWorkDataBase.Helpers;
 using CourseWorkDataBase.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,15 +53,15 @@ using (var scope = app.Services.CreateScope())
     {
         var initializer = services.GetRequiredService<SlotInitializer>();
         await initializer.InitializeSlotAsync();
-        logger.LogInformation("Слоты успешно инициализированы.");
+        logger.LogInformation("Slots initialized");
 
         var context = services.GetRequiredService<ApplicationDbContext>();
         await context.Database.MigrateAsync();
-        logger.LogInformation("Применение миграций прошло успешно.");
+        logger.LogInformation("Migrations done");
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "Произошла ошибка при инициализации слотов или базы данных.");
+        logger.LogError(ex, "Error with init database");
         throw;
     }
 }
@@ -85,5 +83,22 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "authorize",
+    pattern: "{controller=Authorization}/{action=AuthorizationPage}/{id?}");
+
+app.MapControllerRoute(
+    name: "register",
+    pattern: "{controller=Register}/{action=RegisterPage}/{id?}");
+
+app.MapControllerRoute(
+    name: "doctor",
+    pattern: "{controller=Doctor}/{action=DoctorPage}/{id?}");
+
+app.MapControllerRoute(
+    name: "patient",
+    pattern: "{controller=Patient}/{action=PatientPage}/{id?}");
+
 
 app.Run();

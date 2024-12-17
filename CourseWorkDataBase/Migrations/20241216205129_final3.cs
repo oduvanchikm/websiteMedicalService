@@ -5,7 +5,7 @@
 namespace CourseWorkDataBase.Migrations
 {
     /// <inheritdoc />
-    public partial class Migrations4 : Migration
+    public partial class final3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

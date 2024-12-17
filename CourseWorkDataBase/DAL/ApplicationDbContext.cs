@@ -1,8 +1,6 @@
 using CourseWorkDataBase.DAL.Configurations;
 using Microsoft.EntityFrameworkCore;
 using CourseWorkDataBase.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.DAL;
 

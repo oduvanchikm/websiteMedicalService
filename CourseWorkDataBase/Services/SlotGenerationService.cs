@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using CourseWorkDataBase.Helpers;
+// using CourseWorkDataBase.Helpers;
 
-namespace CourseWorkDataBase.Data;
+namespace CourseWorkDataBase.Services;
 
 public class SlotGenerationService : BackgroundService
 {
@@ -41,7 +41,7 @@ public class SlotGenerationService : BackgroundService
         _logger.LogInformation("The slot generation service has been stopped.");
     }
 
-    public async Task GenerateSlotsAsync()
+    private async Task GenerateSlotsAsync()
     {
         using (var scope = _serviceProvider.CreateScope())
         {

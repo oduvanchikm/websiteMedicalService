@@ -5,26 +5,23 @@
 namespace CourseWorkDataBase.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDoctorTriggers : Migration
+    public partial class secondTrigger : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             var createFunction = @"
-CREATE OR REPLACE FUNCTION DoctorClinicTriggerFunction()
+CREATE OR REPLACE FUNCTION PatientTriggerFunction()
     RETURNS TRIGGER AS
 $$
 DECLARE
     UserId        BIGINT;
     HistoryLogId  BIGINT;
-    DoctorId      BIGINT DEFAULT NULL;
-    ClinicId      BIGINT DEFAULT NULL;
     TableName     TEXT;
     OperationType TEXT;
 BEGIN
     IF TG_OP = 'INSERT' THEN
         UserId := NEW.""UserId"";
-        DoctorId := NEW.""ID"";
         TableName := TG_TABLE_NAME;
         OperationType := 'INSERT';
 
@@ -71,16 +68,16 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
-            ";
-            
+";
             migrationBuilder.Sql(createFunction);
-
+            
             var createTrigger = @"
-CREATE TRIGGER DoctorTrigger
+
+CREATE TRIGGER PatientTrigger
     AFTER INSERT OR UPDATE OR DELETE
-    ON ""Doctors""
+    ON ""Patients""
     FOR EACH ROW
-EXECUTE PROCEDURE DoctorClinicTriggerFunction();
+EXECUTE PROCEDURE PatientTriggerFunction();
 ";
             migrationBuilder.Sql(createTrigger);
         }
@@ -89,12 +86,14 @@ EXECUTE PROCEDURE DoctorClinicTriggerFunction();
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             var dropTrigger = @"
-           DROP TRIGGER IF EXISTS ""DoctorTrigger"" ON ""Doctors"";
+           
+DROP TRIGGER IF EXISTS PatientTrigger ON ""Patients"";
            ";
 
             migrationBuilder.Sql(dropTrigger);
+            
             var dropFunction = @"
-           DROP FUNCTION IF EXISTS DoctorClinicTriggerFunction();
+           DROP FUNCTION IF EXISTS PatientTriggerFunction();
            ";
 
             migrationBuilder.Sql(dropFunction);

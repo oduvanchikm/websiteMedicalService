@@ -41,13 +41,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(u => u.User)
             .HasForeignKey(u => u.UserId);
         
-        var fixedCreatedAt = new DateTime(2023, 10, 1, 0, 0, 0, DateTimeKind.Utc);
-
+        var fixedCreatedAt = new DateTime(2024, 10, 1, 0, 0, 0, DateTimeKind.Utc);
+        
         builder.HasData(
             new User() 
             { 
                 Id = 1, 
-                Email = "admin@example.com",
+                Email = "admin@gmail.com",
                 Password = "$2a$11$o.sTnyjh8Mr9ArOWpr5Q..rsRPFHJ7EJ6pIeFUyVEfP2fe5b1riHm", 
                 RoleId = 1, 
                 CreatedAt = fixedCreatedAt,

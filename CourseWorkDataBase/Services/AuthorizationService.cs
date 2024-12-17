@@ -17,7 +17,6 @@ public class AuthorizationService
         _logger = logger;
     }
 
-
     public async Task<User> AuthenticateUser(string email, string password)
     {
         var user = await _context.Users

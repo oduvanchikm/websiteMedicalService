@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authentication;
 
 namespace CourseWorkDataBase.Controllers;
 
-[Authorize]
+[Authorize("PatientPolicy")]
 public class PatientController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -164,8 +164,6 @@ public class PatientController : Controller
             return StatusCode(500, "Internal server error.");
         }
     }
-    
-    
     
     [HttpPost]
     public async Task<IActionResult> CancelAppointment(long appointmentId)

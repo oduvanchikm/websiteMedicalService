@@ -31,10 +31,7 @@ public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
             .WithMany(r => r.Appointments)
             .HasForeignKey(x => x.StatusId)
             .IsRequired();
-
-        // builder.HasOne(a => a.MedicalRecords)
-        //     .WithOne(mr => mr.Appointments) 
-        //     .HasForeignKey<Appointment>(a => a.MedicalRecordsId);
+        
         builder.HasMany(a => a.MedicalRecords)
             .WithOne(m => m.Appointment)
             .HasForeignKey(m => m.AppointmentId)

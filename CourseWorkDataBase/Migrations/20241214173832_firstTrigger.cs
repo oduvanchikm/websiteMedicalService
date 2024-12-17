@@ -5,13 +5,13 @@
 namespace CourseWorkDataBase.Migrations
 {
     /// <inheritdoc />
-    public partial class AddPatientTriggers : Migration
+    public partial class firstTrigger : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             var createFunction = @"
-CREATE OR REPLACE FUNCTION PatientTriggerFunction()
+CREATE OR REPLACE FUNCTION UserTriggerFunction()
     RETURNS TRIGGER AS
 $$
 DECLARE
@@ -19,9 +19,10 @@ DECLARE
     HistoryLogId  BIGINT;
     TableName     TEXT;
     OperationType TEXT;
+
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        UserId := NEW.""UserId"";
+        UserId := NEW.""Id"";
         TableName := TG_TABLE_NAME;
         OperationType := 'INSERT';
 
@@ -33,10 +34,12 @@ BEGIN
 
         INSERT INTO ""UsersHistoryLogs"" (""HistoryLogsId"", ""UserId"")
         VALUES (HistoryLogId, UserId);
+
         RETURN NEW;
 
     ELSIF TG_OP = 'UPDATE' THEN
-        UserId := NEW.""UserId"";
+
+        UserId := NEW.""Id"";
         TableName := TG_TABLE_NAME;
         OperationType := 'UPDATE';
 
@@ -48,10 +51,12 @@ BEGIN
 
         INSERT INTO ""UsersHistoryLogs"" (""HistoryLogsId"", ""UserId"")
         VALUES (HistoryLogId, UserId);
+
         RETURN NEW;
 
     ELSIF TG_OP = 'DELETE' THEN
-        UserId := OLD.""UserId"";
+
+        UserId := OLD.""Id"";
         TableName := TG_TABLE_NAME;
         OperationType := 'DELETE';
 
@@ -63,21 +68,22 @@ BEGIN
 
         INSERT INTO ""UsersHistoryLogs"" (""HistoryLogsId"", ""UserId"")
         VALUES (HistoryLogId, UserId);
-        RETURN OLD;
 
+        RETURN OLD;
     END IF;
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
-            ";
-            
+";
             migrationBuilder.Sql(createFunction);
-
+            
             var createTrigger = @"
-CREATE TRIGGER PatientTrigger
+
+CREATE TRIGGER UserTrigger
     AFTER INSERT OR UPDATE OR DELETE
-    ON ""Patients""
+    ON ""Users""
     FOR EACH ROW
-EXECUTE PROCEDURE PatientTriggerFunction();
+EXECUTE PROCEDURE UserTriggerFunction();
 ";
             migrationBuilder.Sql(createTrigger);
         }
@@ -86,15 +92,17 @@ EXECUTE PROCEDURE PatientTriggerFunction();
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             var dropTrigger = @"
-           DROP TRIGGER IF EXISTS ""PatientTrigger"" ON ""Patients"";
+           DROP TRIGGER IF EXISTS ""UserTrigger"" ON ""Users"";
            ";
 
             migrationBuilder.Sql(dropTrigger);
+            
             var dropFunction = @"
-           DROP FUNCTION IF EXISTS PatientTriggerFunction();
+           DROP FUNCTION IF EXISTS UserTriggerFunction();
            ";
 
             migrationBuilder.Sql(dropFunction);
+
         }
     }
 }

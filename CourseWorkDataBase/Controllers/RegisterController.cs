@@ -24,7 +24,8 @@ public class RegisterController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return View(request);
+            TempData["ErrorMessage"] = "Please fill in all fields correctly.";
+            return RedirectToAction("RegisterPage", "Register");
         }
         
         try
@@ -40,7 +41,8 @@ public class RegisterController : Controller
         }
         catch (ApplicationException ex)
         {
-            return BadRequest(ex.Message);
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction("RegisterPage", "Register");
         }
     }
 }
