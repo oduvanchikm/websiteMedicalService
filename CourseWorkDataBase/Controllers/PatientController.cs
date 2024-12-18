@@ -13,12 +13,12 @@ namespace CourseWorkDataBase.Controllers;
 [Authorize("PatientPolicy")]
 public class PatientController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
     private readonly ILogger<PatientController> _logger;
 
-    public PatientController(ApplicationDbContext context, ILogger<PatientController> logger)
+    public PatientController(IDbContextFactory<ApplicationDbContext> dbContextFactory, ILogger<PatientController> logger)
     {
-        _context = context;
+        _dbContextFactory = dbContextFactory;
         _logger = logger;
     }
     
@@ -32,8 +32,10 @@ public class PatientController : Controller
     public async Task<IEnumerable<DoctorDTO>> GetDoctorsBySpecialtyAsync(long? specialtyId)
     {
         var param = specialtyId ?? 0;
+        
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
 
-        var doctors = await _context.DoctorsDto
+        var doctors = await context.DoctorsDto
             .FromSqlInterpolated($"SELECT * FROM GetDoctorsBySpecialty({param})").ToListAsync();
 
         return doctors;
@@ -41,7 +43,9 @@ public class PatientController : Controller
 
     public async Task<IActionResult> PatientPage(long? specialtyId)
     {
-        var specialties = await _context.Specialties
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
+        var specialties = await context.Specialties
             .OrderBy(s => s.NameSpecialty)
             .ToListAsync();
         
@@ -73,12 +77,14 @@ public class PatientController : Controller
 
     public async Task<IActionResult> ViewDoctor(long doctorId)
     {
-        var slots = await _context.AppointmentSlots
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
+        var slots = await context.AppointmentSlots
             .Where(s => s.DoctorId == doctorId && s.StartTime >= DateTime.Today && !s.IsBooked)
             .OrderBy(s => s.StartTime)
             .ToListAsync();
 
-        var doctor = await _context.Doctors.Include(d => d.Specialty)
+        var doctor = await context.Doctors.Include(d => d.Specialty)
             .FirstOrDefaultAsync(d => d.ID == doctorId);
         if (doctor == null)
         {
@@ -99,8 +105,10 @@ public class PatientController : Controller
     public async Task<IActionResult> BookAppointment(long slotId)
     {
         var userId = GetCurrentUserId();
+        
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
 
-        var patient = await _context.Patients
+        var patient = await context.Patients
             .Where(p => p.UserId == userId)
             .FirstOrDefaultAsync();
         if (patient == null)
@@ -113,7 +121,7 @@ public class PatientController : Controller
         
         try
         {
-            await _context.Database.ExecuteSqlRawAsync(
+            await context.Database.ExecuteSqlRawAsync(
                 "CALL BookAppointment({0}, {1})",
                 slotId,
                 patient.Id
@@ -134,9 +142,11 @@ public class PatientController : Controller
     {
         try
         {
+            await using var context = await _dbContextFactory.CreateDbContextAsync();
+            
             var userId = GetCurrentUserId();
         
-            var patient = await _context.Patients
+            var patient = await context.Patients
                 .Where(p => p.UserId == userId)
                 .FirstOrDefaultAsync();
 
@@ -148,7 +158,7 @@ public class PatientController : Controller
         
             Console.Out.WriteLine("Patient id " + patient.Id + " and user id " + userId);
 
-            var appointments = await _context.Appointments
+            var appointments = await context.Appointments
                 .Where(a => a.PatientId == patient.Id)
                 .Include(a => a.AppointmentSlot)
                 .ThenInclude(s => s.Doctor)
@@ -168,7 +178,9 @@ public class PatientController : Controller
     [HttpPost]
     public async Task<IActionResult> CancelAppointment(long appointmentId)
     {
-        var appointment = await _context.Appointments
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
+        var appointment = await context.Appointments
             .Include(a => a.AppointmentSlot)
             .FirstOrDefaultAsync(a => a.Id == appointmentId);
         if (appointment == null)
@@ -187,15 +199,15 @@ public class PatientController : Controller
         {
             appointment.StatusId = 3;
             appointment.AppointmentSlot.IsBooked = false;
-            _context.Appointments.Update(appointment);
-            _context.AppointmentSlots.Update(appointment.AppointmentSlot);
+            context.Appointments.Update(appointment);
+            context.AppointmentSlots.Update(appointment.AppointmentSlot);
         }
         
         Console.Out.WriteLine($"appointment {appointment.Id} cancelled");
 
         try
         {
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Appointment has been canceled successfully.";
         }
         catch (Exception ex)
@@ -210,8 +222,10 @@ public class PatientController : Controller
     public async Task<IActionResult> Show() 
     {
         var userId = GetCurrentUserId();
+        
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
 
-        var patientid = await _context.Patients
+        var patientid = await context.Patients
             .Where(p => p.UserId == userId)
             .FirstOrDefaultAsync();
         if (patientid == null)
@@ -222,7 +236,7 @@ public class PatientController : Controller
         
         Console.Out.WriteLine($"Patient {patientid.Id}");
         
-        var patient = await _context.Patients
+        var patient = await context.Patients
             .AsNoTracking()
             .Include(p => p.Appointments)
             .ThenInclude(appt => appt.MedicalRecords)

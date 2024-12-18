@@ -8,18 +8,19 @@ namespace CourseWorkDataBase.Data;
 
 public class AuthorizationService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
     private readonly ILogger<AuthorizationService> _logger;
 
-    public AuthorizationService(ApplicationDbContext context, ILogger<AuthorizationService> logger)
+    public AuthorizationService(IDbContextFactory<ApplicationDbContext> dbContextFactory, ILogger<AuthorizationService> logger)
     {
-        _context = context;
+        _dbContextFactory = dbContextFactory;
         _logger = logger;
     }
 
     public async Task<User> AuthenticateUser(string email, string password)
     {
-        var user = await _context.Users
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        var user = await context.Users
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Email == email);
         if (user == null)

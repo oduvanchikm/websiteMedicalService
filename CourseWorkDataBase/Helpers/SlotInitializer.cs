@@ -6,18 +6,20 @@ namespace CourseWorkDataBase.Services;
 
 public class SlotInitializer
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
     private readonly ILogger<SlotInitializer> _logger;
 
-    public SlotInitializer(ApplicationDbContext context, ILogger<SlotInitializer> logger)
+    public SlotInitializer(IDbContextFactory<ApplicationDbContext> dbContextFactory, ILogger<SlotInitializer> logger)
     {
-        _context = context;
+        _dbContextFactory = dbContextFactory;
         _logger = logger;
     }
 
     public async Task InitializeSlotAsync()
     {
-        var doctors = await _context.Doctors
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
+        var doctors = await context.Doctors
             .Include(d => d.AppointmentSlots)
             .ToListAsync();
 
@@ -59,7 +61,7 @@ public class SlotInitializer
                             StartTime = currentTime,
                             EndTime = currentTime.AddMinutes(45)
                         };
-                        _context.AppointmentSlots.Add(slot);
+                        context.AppointmentSlots.Add(slot);
                     }
 
                     currentTime = currentTime.AddMinutes(45);
@@ -67,6 +69,6 @@ public class SlotInitializer
             }
         }
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
     }
 }

@@ -9,12 +9,12 @@ namespace CourseWorkDataBase.Services;
 
 public class AdminService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
     private readonly ILogger<AdminService> _logger;
 
-    public AdminService(ApplicationDbContext context, ILogger<AdminService> logger)
+    public AdminService(IDbContextFactory<ApplicationDbContext> dbContextFactory, ILogger<AdminService> logger)
     {
-        _context = context;
+        _dbContextFactory = dbContextFactory;
         _logger = logger;
     }
 
@@ -31,12 +31,14 @@ public class AdminService
             string? clinicPhoneNumber
             )
     {
-        if (await _context.Users.AnyAsync(x => x.Email == email && x.Id == 2))
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
+        if (await context.Users.AnyAsync(x => x.Email == email && x.Id == 2))
         {
             throw new ApplicationException("A user with this email already exists.");
         }
         
-        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Doctor");
+        var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Doctor");
         if (role == null)
         {
             throw new ApplicationException("Role 'Doctor' not found.");
@@ -55,17 +57,17 @@ public class AdminService
             CreatedAt = DateTime.UtcNow
         };
 
-        using (var transaction = _context.Database.BeginTransaction())
+        using (var transaction = context.Database.BeginTransaction())
         {
             try
             {
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+                context.Users.Add(user);
+                await context.SaveChangesAsync();
                 
                 Clinic clinic;
                 if (clinicId.HasValue)
                 {
-                    clinic = await _context.Clinics.FindAsync(clinicId.Value);
+                    clinic = await context.Clinics.FindAsync(clinicId.Value);
                     if (clinic == null)
                     {
                         Console.Out.WriteLine("CLINIC  not found.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -79,7 +81,7 @@ public class AdminService
                         throw new ApplicationException("The clinic address is required.");
                     }
                     
-                    clinic = await _context.Clinics
+                    clinic = await context.Clinics
                         .FirstOrDefaultAsync(s => s.Address.ToLower() == clinicAddress.ToLower());
                     if (clinic != null)
                     {
@@ -94,15 +96,15 @@ public class AdminService
                     
                     Console.Out.WriteLine("A new clinic has created with ID: " + clinic.Id);
                 
-                    _context.Clinics.Add(clinic);
-                    await _context.SaveChangesAsync();
+                    context.Clinics.Add(clinic);
+                    await context.SaveChangesAsync();
                     Console.Out.WriteLine("A new clinic has created with ID: " + clinic.Id);
                 }
                 
                 Specialty specialty;
                 if (specialtyId.HasValue)
                 {
-                    specialty = await _context.Specialties.FindAsync(specialtyId.Value);
+                    specialty = await context.Specialties.FindAsync(specialtyId.Value);
                     if (specialty == null)
                     {
                         Console.Out.WriteLine("Special ty not found.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -116,7 +118,7 @@ public class AdminService
                         throw new ApplicationException("The specialty name is required if specialtyId is not provided.");
                     }
                     
-                    specialty = await _context.Specialties
+                    specialty = await context.Specialties
                         .FirstOrDefaultAsync(s => s.NameSpecialty.ToLower() == specialtyName.ToLower());
                     if (specialty != null)
                     {
@@ -129,8 +131,8 @@ public class AdminService
                         Description = specialtyDescription?.Trim(),
                     };
                 
-                    _context.Specialties.Add(specialty);
-                    await _context.SaveChangesAsync();
+                    context.Specialties.Add(specialty);
+                    await context.SaveChangesAsync();
                     Console.Out.WriteLine("A new specialization has created with ID: " + specialty.Id);
                 }
                 
@@ -143,8 +145,8 @@ public class AdminService
                     SpecialtyID = specialty.Id
                 };
 
-                _context.Doctors.Add(doctor);
-                await _context.SaveChangesAsync();
+                context.Doctors.Add(doctor);
+                await context.SaveChangesAsync();
                 // Console.Out.WriteLine("A new specialization has created with ID: " + specialty.Id);
                 await transaction.CommitAsync();
                 return doctor;
@@ -159,7 +161,8 @@ public class AdminService
 
     public async Task<List<Doctor>> GetAllDoctorsAsync()
     {
-        var doctors = await _context.Doctors
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        var doctors = await context.Doctors
             .Include(d => d.Specialty)
             .Include(d => d.Clinic)
             .ToListAsync();

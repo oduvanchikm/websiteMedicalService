@@ -21,6 +21,7 @@ public class AppointmentSlotConfiguration : IEntityTypeConfiguration<Appointment
         
         builder.HasOne(x => x.Doctor)
             .WithMany(x => x.AppointmentSlots)
-            .HasForeignKey(f => f.DoctorId);
+            .HasForeignKey(f => f.DoctorId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

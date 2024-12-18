@@ -7,21 +7,23 @@ namespace CourseWorkDataBase.Data;
 
 public class RegistrationService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
 
-    public RegistrationService(ApplicationDbContext context)
+    public RegistrationService(IDbContextFactory<ApplicationDbContext> dbContextFactory)
     {
-        _context = context;
+        _dbContextFactory = dbContextFactory;
     }
 
     public async Task<Patient> RegisterPage(string email, string password, string firstName, string familyName, string gender)
     {
-        if (await _context.Users.AnyAsync(u => u.Email == email && u.RoleId == 3))
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
+        if (await context.Users.AnyAsync(u => u.Email == email && u.RoleId == 3))
         {
             throw new ApplicationException("Email already exists.");
         }
     
-        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Patient");
+        var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Patient");
         if (role == null)
         {
             throw new ApplicationException("Role 'Patient' not found.");
@@ -37,8 +39,8 @@ public class RegistrationService
             CreatedAt = DateTime.UtcNow
         };
     
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
     
         var patient = new Patient
         {
@@ -49,8 +51,8 @@ public class RegistrationService
             Date = DateTime.UtcNow
         };
     
-        _context.Patients.Add(patient);
-        await _context.SaveChangesAsync();
+        context.Patients.Add(patient);
+        await context.SaveChangesAsync();
         
         return patient;
     }

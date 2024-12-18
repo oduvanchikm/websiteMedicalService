@@ -7,12 +7,12 @@ namespace CourseWorkDataBase.Services;
 
 public class DoctorService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
     private readonly ILogger<DoctorService> _logger;
 
-    public DoctorService(ApplicationDbContext context, ILogger<DoctorService> logger)
+    public DoctorService(IDbContextFactory<ApplicationDbContext> dbContextFactory, ILogger<DoctorService> logger)
     {
-        _context = context;
+        _dbContextFactory = dbContextFactory;
         _logger = logger;
     }
 
@@ -34,14 +34,16 @@ public class DoctorService
             Console.Out.WriteLine(nameMedication);
         }
         
-        using (var transaction = _context.Database.BeginTransaction())
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
+        using (var transaction = context.Database.BeginTransaction())
         {
             try
             {
                 Medications medication;
                 if (medicationId.HasValue)
                 {
-                    medication = await _context.Medications
+                    medication = await context.Medications
                         .FindAsync(medicationId.Value);
                     if (medication == null)
                     {
@@ -56,7 +58,7 @@ public class DoctorService
                         throw new ApplicationException("The clinic address is required.");
                     }
                     
-                    medication = await _context.Medications
+                    medication = await context.Medications
                         .FirstOrDefaultAsync(s => s.Name == nameMedication);
                     if (medication != null)
                     {
@@ -71,12 +73,12 @@ public class DoctorService
                     
                     Console.Out.WriteLine("A new medication has created with ID: " + medication.MedicationId);
                 
-                    _context.Medications.Add(medication);
-                    await _context.SaveChangesAsync();
+                    context.Medications.Add(medication);
+                    await context.SaveChangesAsync();
                     Console.Out.WriteLine("A new medication has created with ID: " + medication.MedicationId);
                 }
 
-                var appointment = await _context.Appointments
+                var appointment = await context.Appointments
                     .Include(a => a.MedicalRecords)
                     .FirstOrDefaultAsync(a => a.Id == appointmentId);
                 if (appointment == null)
@@ -93,8 +95,8 @@ public class DoctorService
                     AppointmentId = appointment.Id
                 };
                 
-                _context.MedicalRecords.Add(medicalRecords);
-                await _context.SaveChangesAsync();
+                context.MedicalRecords.Add(medicalRecords);
+                await context.SaveChangesAsync();
                 
                 var medicalRecordMedication = new MedicalRecordMedication
                 {
@@ -102,8 +104,8 @@ public class DoctorService
                     MedicationId = medication.MedicationId
                 };
                 
-                _context.MedicalRecordMedications.Add(medicalRecordMedication);
-                await _context.SaveChangesAsync();
+                context.MedicalRecordMedications.Add(medicalRecordMedication);
+                await context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
                 return medicalRecords;

@@ -22,7 +22,7 @@ public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
             .WithOne(a => a.Appointment)
             .HasForeignKey<Appointment>(a => a.AppointmentSlotId)
             .IsRequired() 
-            .OnDelete(DeleteBehavior.Restrict); 
+            .OnDelete(DeleteBehavior.Cascade); 
         
         builder.HasIndex(a => a.AppointmentSlotId)
             .IsUnique();
@@ -30,12 +30,13 @@ public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
         builder.HasOne(x => x.Status)
             .WithMany(r => r.Appointments)
             .HasForeignKey(x => x.StatusId)
-            .IsRequired();
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Restrict); 
         
         builder.HasMany(a => a.MedicalRecords)
             .WithOne(m => m.Appointment)
             .HasForeignKey(m => m.AppointmentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.SetNull);
 
     }
 }

@@ -33,6 +33,7 @@ public class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
         
         builder.HasMany(x => x.AppointmentSlots)
             .WithOne(x => x.Doctor)
-            .HasForeignKey(x => x.DoctorId);
+            .HasForeignKey(x => x.DoctorId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

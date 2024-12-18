@@ -13,15 +13,15 @@ namespace CourseWorkDataBase.Controllers;
 [Authorize("DoctorPolicy")]
 public class DoctorController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
     private readonly ILogger<DoctorController> _logger;
     private readonly DoctorService _doctorService;
 
-    public DoctorController(ApplicationDbContext context, 
+    public DoctorController(IDbContextFactory<ApplicationDbContext> dbContextFactory, 
         ILogger<DoctorController> logger,
         DoctorService doctorService)
     {
-        _context = context;
+        _dbContextFactory = dbContextFactory;
         _logger = logger;
         _doctorService = doctorService;
     }
@@ -53,7 +53,9 @@ public class DoctorController : Controller
             return NotFound();
         }
         
-        var doctor = await _context.Doctors
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
+        var doctor = await context.Doctors
             .Where(d => d.UserId == userId)
             .FirstOrDefaultAsync();
         if (doctor == null)
@@ -62,7 +64,7 @@ public class DoctorController : Controller
             return NotFound();
         }
         
-        var appointmentSlots = await _context.AppointmentSlots
+        var appointmentSlots = await context.AppointmentSlots
             .Include(a => a.Appointment)
             .ThenInclude(ap => ap.Patient)
             .Where(a => a.DoctorId == doctor.ID && a.IsBooked == true)
@@ -72,7 +74,9 @@ public class DoctorController : Controller
     
     private async Task<IEnumerable<SelectListItem>> GetMedicationsSelectListAsync()
     {
-        var medications = await _context.Medications
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
+        var medications = await context.Medications
             .OrderBy(x => x.Name)
             .ToListAsync();
     
@@ -109,9 +113,11 @@ public class DoctorController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddMedicalRecords(AddMedicalRecordsViewModel model)
     {
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
         if (!ModelState.IsValid)
         {
-            var medicationsList = await _context.Medications.ToListAsync();
+            var medicationsList = await context.Medications.ToListAsync();
             model.MedicationsList = medicationsList.Select(m => new SelectListItem
             {
                 Value = m.MedicationId.ToString(),
@@ -151,8 +157,10 @@ public class DoctorController : Controller
             _logger.LogWarning("Invalid patient ID in show medical records.");
             return NotFound();
         }
+        
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
 
-        var patient = await _context.Patients
+        var patient = await context.Patients
             .AsNoTracking()
             .Include(p => p.Appointments)
             .ThenInclude(appt => appt.MedicalRecords)

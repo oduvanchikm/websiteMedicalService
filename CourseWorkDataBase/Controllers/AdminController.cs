@@ -7,7 +7,7 @@ using CourseWorkDataBase.Services;
 using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.ViewModels;
 using Microsoft.EntityFrameworkCore;
-using CourseWorkDataBase.Services;
+using Microsoft.Extensions.Options;
 
 namespace CourseWorkDataBase.Controllers;
 
@@ -15,14 +15,19 @@ namespace CourseWorkDataBase.Controllers;
 public class AdminController : Controller
 {
     private readonly AdminService _adminService;
-    private readonly ApplicationDbContext _context;
+    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
     private readonly ILogger<AdminController> _logger;
+    private readonly IConfiguration _configuration;
 
-    public AdminController(AdminService adminService, ApplicationDbContext context, ILogger<AdminController> logger)
+    
+    public AdminController(AdminService adminService, IDbContextFactory<ApplicationDbContext> dbContextFactory, 
+        ILogger<AdminController> logger, 
+        IConfiguration configuration)
     {
         _adminService = adminService;
-        _context = context;
+        _dbContextFactory = dbContextFactory;
         _logger = logger;
+        _configuration = configuration;
     }
     
     [HttpGet]
@@ -35,19 +40,21 @@ public class AdminController : Controller
     public async Task<IActionResult> СreateArchivedCopiesOfTheDatabase()
     {
         _logger.LogDebug("start СreateArchivedCopiesOfTheDatabase");
-        var databaseName = _context.Database.GetDbConnection().Database;
-
-        var backupFolder = "/Users/oduvanchik/Desktop/CourseWorkDataBase/CourseWorkDataBase/Backups";
+        
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
+        var databaseName = context.Database.GetDbConnection().Database;
+        
+        var backupFolder = _configuration["BackupConfig:BackupFolderPath"];
         var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-
+        
         var backupFileName = $"{databaseName}_{timestamp}.bak";
         var backupPath = Path.Combine(backupFolder, backupFileName);
-
         var pgDumpPath = "/opt/homebrew/bin/pg_dump";
-
-        var connection = (Npgsql.NpgsqlConnection)_context.Database.GetDbConnection();
+        
+        var connection = (Npgsql.NpgsqlConnection)context.Database.GetDbConnection();
         var builder = new Npgsql.NpgsqlConnectionStringBuilder(connection.ConnectionString);
-
+        
         var host = builder.Host;
         var port = builder.Port;
         var userName = builder.Username;
@@ -100,7 +107,7 @@ public class AdminController : Controller
     public IActionResult GetAvailableBackups()
     {
         _logger.LogDebug("Retrieving a list of available database backups.");
-        var backupFolder = "/Users/oduvanchik/Desktop/CourseWorkDataBase/CourseWorkDataBase/Backups";
+        var backupFolder = _configuration["BackupConfig:BackupFolderPath"];
 
         var backupFiles = Directory.GetFiles(backupFolder)
             .Select(Path.GetFileName)
@@ -128,9 +135,12 @@ public class AdminController : Controller
             _logger.LogWarning("No backup file specified.");
             return BadRequest("No backup file specified.");
         }
+        
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
+        var backupFolder = _configuration["BackupConfig:BackupFolderPath"];
 
-        string pathFile = Path.Combine("/Users/oduvanchik/Desktop/CourseWorkDataBase/CourseWorkDataBase/Backups",
-            backupFile);
+        string pathFile = Path.Combine(backupFolder, backupFile);
 
         if (!System.IO.File.Exists(pathFile))
         {
@@ -140,7 +150,7 @@ public class AdminController : Controller
 
         try
         {
-            var connection = (Npgsql.NpgsqlConnection)_context.Database.GetDbConnection();
+            var connection = (Npgsql.NpgsqlConnection)context.Database.GetDbConnection();
             var builder = new Npgsql.NpgsqlConnectionStringBuilder(connection.ConnectionString);
 
             string host = builder.Host;
@@ -243,7 +253,8 @@ public class AdminController : Controller
 
     private async Task<IEnumerable<SelectListItem>> GetSpecialtiesSelectListAsync()
     {
-        var specialties = await _context.Specialties
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        var specialties = await context.Specialties
             .OrderBy(s => s.NameSpecialty)
             .ToListAsync();
 
@@ -256,7 +267,8 @@ public class AdminController : Controller
 
     private async Task<IEnumerable<SelectListItem>> GetClinicsSelectListAsync()
     {
-        var clinic = await _context.Clinics
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        var clinic = await context.Clinics
             .OrderBy(s => s.Address)
             .ToListAsync();
 
@@ -323,11 +335,12 @@ public class AdminController : Controller
     [HttpPost]
     public async Task<IActionResult> DeleteDoctor(long id)
     {
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
         Console.Out.WriteLine($"ID: {id}");
         Console.Out.WriteLine("Delete Doctor1");
         _logger.LogInformation($"Initiating deletion process for Doctor with ID: {id}");
     
-        var doctor = await _context.Doctors
+        var doctor = await context.Doctors
             .Include(d => d.User)
             .Include(d => d.AppointmentSlots)
             .FirstOrDefaultAsync(d => d.ID == id);
@@ -336,32 +349,16 @@ public class AdminController : Controller
             _logger.LogWarning($"Doctor with ID {id} not found.");
             return NotFound(new { message = "Doctor not found." });
         }
+
+        var doctorUserId = doctor.UserId;
     
-        using (var transaction = _context.Database.BeginTransaction())
+        using (var transaction = context.Database.BeginTransaction())
         {
             try
             {
                 _logger.LogInformation($"Start transaction for Doctor with ID: {id}");
                 
-                var medicalRecords = await _context.MedicalRecords
-                    .Where(mr => mr.Appointment.AppointmentSlot.DoctorId == id)
-                    .Include(mr => mr.MedicalRecordMedications)
-                    .ToListAsync();
-                
-                if (medicalRecords.Any())
-                {
-                    foreach (var record in medicalRecords)
-                    {
-                        _context.MedicalRecordMedications.RemoveRange(record.MedicalRecordMedications);
-                        _context.MedicalRecords.Remove(record);
-                        _logger.LogInformation(
-                            $"Deleted MedicalRecord ID {record.Id} and its medications for Doctor ID {id}.");
-                    }
-                }
-                
-                _logger.LogInformation($"transaction1 for Doctor with ID: {id}");
-                
-                var appointments = await _context.Appointments
+                var appointments = await context.Appointments
                     .Where(a => a.AppointmentSlot.DoctorId == id)
                     .Include(a => a.MedicalRecords)
                     .ToListAsync();
@@ -372,12 +369,12 @@ public class AdminController : Controller
                     {
                         if (appointment.MedicalRecords != null && appointment.MedicalRecords.Any())
                         {
-                            _context.MedicalRecords.RemoveRange(appointment.MedicalRecords);
+                            context.MedicalRecords.RemoveRange(appointment.MedicalRecords);
                             _logger.LogInformation(
                                 $"Deleted MedicalRecords for Appointment ID {appointment.Id} associated with Doctor ID {id}.");
                         }
     
-                        _context.Appointments.Remove(appointment);
+                        context.Appointments.Remove(appointment);
                         _logger.LogInformation($"Deleted Appointment ID {appointment.Id} for Doctor ID {id}.");
                     }
                 }
@@ -386,14 +383,14 @@ public class AdminController : Controller
                 
                 if (doctor.AppointmentSlots != null && doctor.AppointmentSlots.Any())
                 {
-                    _context.AppointmentSlots.RemoveRange(doctor.AppointmentSlots);
+                    context.AppointmentSlots.RemoveRange(doctor.AppointmentSlots);
                     _logger.LogInformation(
                         $"Deleted {doctor.AppointmentSlots.Count} appointment slots for Doctor ID {id}.");
                 }
                 
                 _logger.LogInformation($"transaction3 for Doctor with ID: {id}");
     
-                var user = await _context.Users
+                var user = await context.Users
                     .Include(d => d.Doctor)
                     .FirstOrDefaultAsync(d => d.Id == doctor.ID);
                 if (user == null)
@@ -405,12 +402,12 @@ public class AdminController : Controller
                 _logger.LogInformation($"transaction4 for Doctor with ID: {id}");
     
                 Console.Out.WriteLine("Delete Doctor2");
-                _context.Doctors.Remove(doctor);
+                context.Doctors.Remove(doctor);
                 Console.Out.WriteLine("Delete Doctor3");
     
                 if (doctor.User != null)
                 {
-                    _context.Users.Remove(user);
+                    context.Users.Remove(user);
                     Console.Out.WriteLine("Delete Doctor4");
                 }
                 
@@ -418,7 +415,7 @@ public class AdminController : Controller
     
                 Console.Out.WriteLine("Delete Doctor5");
                 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 
                 _logger.LogInformation($"End transaction for Doctor with ID: {id}");
