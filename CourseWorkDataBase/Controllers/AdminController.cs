@@ -336,9 +336,7 @@ public class AdminController : Controller
     public async Task<IActionResult> DeleteDoctor(long id)
     {
         await using var context = await _dbContextFactory.CreateDbContextAsync();
-        
-        Console.Out.WriteLine($"ID: {id}");
-        Console.Out.WriteLine("Delete Doctor1");
+
         _logger.LogInformation($"Initiating deletion process for Doctor with ID: {id}");
     
         var doctor = await context.Doctors
@@ -441,9 +439,7 @@ public class AdminController : Controller
                 
                 _logger.LogInformation($"transaction4 for Doctor with ID: {id}");
     
-                Console.Out.WriteLine("Delete Doctor2");
                 context.Doctors.Remove(doctor);
-                Console.Out.WriteLine("Delete Doctor3");
     
                 if (doctor.User != null)
                 {
@@ -452,8 +448,6 @@ public class AdminController : Controller
                 }
                 
                 _logger.LogInformation($"transaction5 for Doctor with ID: {id}");
-    
-                Console.Out.WriteLine("Delete Doctor5");
                 
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CourseWorkDataBase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241218135241_trigger1")]
-    partial class trigger1
+    [Migration("20241218144432_thirdTrigger")]
+    partial class thirdTrigger
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -537,7 +537,7 @@ namespace CourseWorkDataBase.Migrations
                     b.HasOne("CourseWorkDataBase.Models.User", "User")
                         .WithOne("Patient")
                         .HasForeignKey("CourseWorkDataBase.Models.Patient", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -559,13 +559,13 @@ namespace CourseWorkDataBase.Migrations
                     b.HasOne("CourseWorkDataBase.Models.HistoryLogs", "HistoryLog")
                         .WithMany("UsersHistoryLogsEnumerable")
                         .HasForeignKey("HistoryLogsId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("CourseWorkDataBase.Models.User", "User")
                         .WithMany("UsersHistoryLogsEnumerable")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("HistoryLog");

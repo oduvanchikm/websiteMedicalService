@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CourseWorkDataBase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241218140045_trigger11")]
-    partial class trigger11
+    [Migration("20241218144329_firstTrigger")]
+    partial class firstTrigger
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -537,7 +537,7 @@ namespace CourseWorkDataBase.Migrations
                     b.HasOne("CourseWorkDataBase.Models.User", "User")
                         .WithOne("Patient")
                         .HasForeignKey("CourseWorkDataBase.Models.Patient", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
