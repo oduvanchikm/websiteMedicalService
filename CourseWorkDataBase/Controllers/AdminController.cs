@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using CourseWorkDataBase.Services;
 using CourseWorkDataBase.DAL;
+using CourseWorkDataBase.Models;
 using CourseWorkDataBase.ViewModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace CourseWorkDataBase.Controllers;
 
@@ -336,6 +336,7 @@ public class AdminController : Controller
     public async Task<IActionResult> DeleteDoctor(long id)
     {
         await using var context = await _dbContextFactory.CreateDbContextAsync();
+        
         Console.Out.WriteLine($"ID: {id}");
         Console.Out.WriteLine("Delete Doctor1");
         _logger.LogInformation($"Initiating deletion process for Doctor with ID: {id}");
@@ -349,14 +350,56 @@ public class AdminController : Controller
             _logger.LogWarning($"Doctor with ID {id} not found.");
             return NotFound(new { message = "Doctor not found." });
         }
-
-        var doctorUserId = doctor.UserId;
     
         using (var transaction = context.Database.BeginTransaction())
         {
             try
             {
                 _logger.LogInformation($"Start transaction for Doctor with ID: {id}");
+
+                var doctorId = doctor?.ID;
+                var userId = doctor?.UserId;
+
+                if (doctorId.HasValue)
+                {
+                    var historyLog = new HistoryLogs
+                    {
+                        TableName = "Doctors",
+                        OperationType = "DELETE",
+                        ChangeTime = DateTime.UtcNow
+                    };
+                    
+                    context.HistoryLogs.Add(historyLog);
+                    await context.SaveChangesAsync();
+
+                    var usersHistoryLog = new UsersHistoryLogs
+                    {
+                        HistoryLogsId = historyLog.Id,
+                        UserId = doctorId.Value
+                    };
+                    
+                    context.UsersHistoryLogs.Add(usersHistoryLog);
+                }
+                
+                if (userId.HasValue)
+                {
+                    var historyLog = new HistoryLogs
+                    {
+                        TableName = "Users",
+                        OperationType = "DELETE",
+                        ChangeTime = DateTime.UtcNow
+                    };
+                    context.HistoryLogs.Add(historyLog);
+                    await context.SaveChangesAsync();
+
+                    var usersHistoryLog = new UsersHistoryLogs
+                    {
+                        HistoryLogsId = historyLog.Id,
+                        UserId = userId.Value
+                    };
+                    
+                    context.UsersHistoryLogs.Add(usersHistoryLog);
+                }
                 
                 var appointments = await context.Appointments
                     .Where(a => a.AppointmentSlot.DoctorId == id)
@@ -365,16 +408,10 @@ public class AdminController : Controller
     
                 if (appointments.Any())
                 {
+                    context.Appointments.RemoveRange(appointments);
+
                     foreach (var appointment in appointments)
                     {
-                        if (appointment.MedicalRecords != null && appointment.MedicalRecords.Any())
-                        {
-                            context.MedicalRecords.RemoveRange(appointment.MedicalRecords);
-                            _logger.LogInformation(
-                                $"Deleted MedicalRecords for Appointment ID {appointment.Id} associated with Doctor ID {id}.");
-                        }
-    
-                        context.Appointments.Remove(appointment);
                         _logger.LogInformation($"Deleted Appointment ID {appointment.Id} for Doctor ID {id}.");
                     }
                 }
@@ -384,15 +421,18 @@ public class AdminController : Controller
                 if (doctor.AppointmentSlots != null && doctor.AppointmentSlots.Any())
                 {
                     context.AppointmentSlots.RemoveRange(doctor.AppointmentSlots);
-                    _logger.LogInformation(
-                        $"Deleted {doctor.AppointmentSlots.Count} appointment slots for Doctor ID {id}.");
+                    
+                    foreach (var AppointmentSlot in doctor.AppointmentSlots)
+                    {
+                        _logger.LogInformation($"Deleted AppointmentSlot ID {AppointmentSlot.Id} for Doctor ID {id}.");
+                    }
                 }
                 
                 _logger.LogInformation($"transaction3 for Doctor with ID: {id}");
     
                 var user = await context.Users
                     .Include(d => d.Doctor)
-                    .FirstOrDefaultAsync(d => d.Id == doctor.ID);
+                    .FirstOrDefaultAsync(d => d.Id == userId);
                 if (user == null)
                 {
                     Console.Out.WriteLine("Doctor not found");

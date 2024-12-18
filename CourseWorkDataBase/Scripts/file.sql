@@ -157,30 +157,13 @@ BEGIN
         VALUES (HistoryLogId, UserId);
 
         RETURN NEW;
-
-    ELSIF TG_OP = 'DELETE' THEN
-
-        UserId := OLD."Id";
-        TableName := TG_TABLE_NAME;
-        OperationType := 'DELETE';
-
-        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
-        VALUES (TableName,
-                OperationType,
-                NOW())
-        RETURNING "Id" INTO HistoryLogId;
-
-        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
-        VALUES (HistoryLogId, UserId);
-
-        RETURN OLD;
     END IF;
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER UserTrigger
-    AFTER INSERT OR UPDATE OR DELETE
+    AFTER INSERT OR UPDATE
     ON "Users"
     FOR EACH ROW
 EXECUTE PROCEDURE UserTriggerFunction();
@@ -233,27 +216,12 @@ BEGIN
         VALUES (HistoryLogId, UserId);
         RETURN NEW;
 
-    ELSIF TG_OP = 'DELETE' THEN
-        UserId := OLD."UserId";
-        TableName := TG_TABLE_NAME;
-        OperationType := 'DELETE';
-
-        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
-        VALUES (TableName,
-                OperationType,
-                NOW())
-        RETURNING "Id" INTO HistoryLogId;
-
-        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
-        VALUES (HistoryLogId, UserId);
-        RETURN OLD;
-
     END IF;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER PatientTrigger
-    AFTER INSERT OR UPDATE OR DELETE
+    AFTER INSERT OR UPDATE
     ON "Patients"
     FOR EACH ROW
 EXECUTE PROCEDURE PatientTriggerFunction();
@@ -309,28 +277,12 @@ BEGIN
         INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
         VALUES (HistoryLogId, UserId);
         RETURN NEW;
-
-    ELSIF TG_OP = 'DELETE' THEN
-        UserId := OLD."UserId";
-        TableName := TG_TABLE_NAME;
-        OperationType := 'DELETE';
-
-        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
-        VALUES (TableName,
-                OperationType,
-                NOW())
-        RETURNING "Id" INTO HistoryLogId;
-
-        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
-        VALUES (HistoryLogId, UserId);
-        RETURN OLD;
-
     END IF;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER DoctorTrigger
-    AFTER INSERT OR UPDATE OR DELETE
+    AFTER INSERT OR UPDATE
     ON "Doctors"
     FOR EACH ROW
 EXECUTE PROCEDURE DoctorClinicTriggerFunction();
@@ -364,4 +316,11 @@ select *
 from "UsersHistoryLogs";
 
 select *
+from "HistoryLogs";
+
+select *
 from "Roles";
+
+-- INSERT INTO "Users" ("Id", "Email", "Password", "RoleId", "CreatedAt")
+-- VALUES (1, 'admin@example.com', '$2a$11$o.sTnyjh8Mr9ArOWpr5Q..rsRPFHJ7EJ6pIeFUyVEfP2fe5b1riHm', 1,
+--         '2024-12-14 17:50:33.767814 +00:00');
