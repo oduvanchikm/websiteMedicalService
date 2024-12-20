@@ -79,7 +79,7 @@ ViewData["Title"] = "Medical History";
     </div>
 
     <div class="d-flex justify-content-end mb-4">
-        <a href=@Url.Action("CreatePdfFileWithMedicalRecords", "Doctor", new { id = Model.PatientId }) class="btn btn-pdf me-2">Save as pdf</a>
+        <a href=@Url.Action("CreatePdfFileWithMedicalRecordsDoctor", "Doctor", new { id = Model.PatientId }) class="btn btn-pdf me-2">Save as pdf</a>
         <a href=@Url.Action("DoctorPage", "Doctor") class="btn btn-pdf me-2">Back to Doctor's Page</a>
     </div>
 

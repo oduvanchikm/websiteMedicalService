@@ -37,10 +37,6 @@ public class SavePdfFile
             using (var document = new iText.Layout.Document(pdf))
             {
                 var fontPath = "/System/Library/Fonts/Supplemental/Arial.ttf";
-                if (!File.Exists(fontPath))
-                {
-                    throw new FileNotFoundException($"Файл шрифта не найден: {fontPath}");
-                }
 
                 var font = PdfFontFactory.CreateFont(fontPath, PdfEncodings.IDENTITY_H);
                 document.SetFont(font);

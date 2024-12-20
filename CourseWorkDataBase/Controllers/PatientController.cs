@@ -287,7 +287,7 @@ public class PatientController : Controller
     }
     
     [HttpGet]
-    public async Task<IActionResult> CreatePdfFileWithMedicalRecords(long id)
+    public async Task<IActionResult> CreatePdfFileWithMedicalRecordsPatient(long id)
     {
         await using var context = await _dbContextFactory.CreateDbContextAsync();
 
@@ -306,15 +306,13 @@ public class PatientController : Controller
 
         if (patient == null)
         {
-            _logger.LogWarning($"Patient with ID {id} not found.");
-            return NotFound();
+            throw new Exception($"Patient with ID {id} not found.");
         }
 
         var appointments = patient.Appointments?.ToList();
         if (appointments == null || !appointments.Any())
         {
-            _logger.LogWarning($"No appointments found for patient with ID {id}.");
-            return NotFound();
+            throw new Exception($"No appointments found for patient with ID {id}.");
         }
 
         var medicalRecordsWithDoctors = appointments
@@ -337,8 +335,7 @@ public class PatientController : Controller
 
         if (!medicalRecordsWithDoctors.Any())
         {
-            _logger.LogWarning($"Not medical record with ID {id}.");
-            return NotFound();
+            throw new Exception($"Not medical record with ID {id}.");
         }
 
         foreach (var mrwd in medicalRecordsWithDoctors)
@@ -368,16 +365,20 @@ public class PatientController : Controller
         }
         catch (IOException ex) 
         {
-            _logger.LogError($"PdfException occurred: {ex.Message}");
-            return StatusCode(500, "An error occurred while generating the PDF.");
+            throw new Exception($"PdfException occurred: {ex.Message}");
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Unexpected exception occurred: {ex.Message}");
-            return StatusCode(500, "An unexpected error occurred.");
+            throw new Exception($"Unexpected exception occurred: {ex.Message}");
         }
 
-        var fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
-        return File(fileBytes, "application/pdf", $"MedicalRecords_{id}.pdf");
+        var fileBytes = System.IO.File.ReadAllBytes(fullPath);
+
+        if (!System.IO.File.Exists(fullPath))
+        {
+            throw new FileNotFoundException($"File not found at {fullPath}");
+        }
+
+        return File(fileBytes, "application/pdf", fileName);
     }
 }

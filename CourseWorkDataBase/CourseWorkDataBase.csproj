@@ -30,6 +30,7 @@
 
     <ItemGroup>
       <Folder Include="Backups\" />
+      <Folder Include="Pdfs\" />
     </ItemGroup>
 
     <ItemGroup>
