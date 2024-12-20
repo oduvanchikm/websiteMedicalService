@@ -37,6 +37,5 @@ public class AppointmentConfiguration : IEntityTypeConfiguration<Appointment>
             .WithOne(m => m.Appointment)
             .HasForeignKey(m => m.AppointmentId)
             .OnDelete(DeleteBehavior.SetNull);
-
     }
 }

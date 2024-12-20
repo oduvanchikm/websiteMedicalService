@@ -18,7 +18,6 @@ public class AdminController : Controller
     private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
     private readonly ILogger<AdminController> _logger;
     private readonly IConfiguration _configuration;
-
     
     public AdminController(AdminService adminService, IDbContextFactory<ApplicationDbContext> dbContextFactory, 
         ILogger<AdminController> logger, 
@@ -356,28 +355,10 @@ public class AdminController : Controller
                 _logger.LogInformation($"Start transaction for Doctor with ID: {id}");
 
                 var doctorId = doctor?.ID;
-                var userId = doctor?.UserId;
-
-                if (doctorId.HasValue)
-                {
-                    var historyLog = new HistoryLogs
-                    {
-                        TableName = "Doctors",
-                        OperationType = "DELETE",
-                        ChangeTime = DateTime.UtcNow
-                    };
-                    
-                    context.HistoryLogs.Add(historyLog);
-                    await context.SaveChangesAsync();
-
-                    var usersHistoryLog = new UsersHistoryLogs
-                    {
-                        HistoryLogsId = historyLog.Id,
-                        UserId = doctorId.Value
-                    };
-                    
-                    context.UsersHistoryLogs.Add(usersHistoryLog);
-                }
+                var userId = doctor?.User.Id;
+                
+                Console.Out.WriteLine($"User with ID {userId} deleted.");
+                Console.Out.WriteLine($"Doctor with ID {doctorId} deleted.");
                 
                 if (userId.HasValue)
                 {

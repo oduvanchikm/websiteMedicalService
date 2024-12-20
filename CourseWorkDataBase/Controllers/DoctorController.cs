@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using CourseWorkDataBase.Services;
 using CourseWorkDataBase.ViewModels;
+using CourseWorkDataBase.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Controllers;
@@ -16,23 +17,25 @@ public class DoctorController : Controller
     private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
     private readonly ILogger<DoctorController> _logger;
     private readonly DoctorService _doctorService;
+    private readonly IConfiguration _configuration;
 
-    public DoctorController(IDbContextFactory<ApplicationDbContext> dbContextFactory, 
+    public DoctorController(IDbContextFactory<ApplicationDbContext> dbContextFactory,
         ILogger<DoctorController> logger,
-        DoctorService doctorService)
+        DoctorService doctorService, IConfiguration configuration)
     {
         _dbContextFactory = dbContextFactory;
         _logger = logger;
         _doctorService = doctorService;
+        _configuration = configuration;
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync();
         return RedirectToAction("AuthorizationPage", "Authorization");
     }
-    
+
     private long GetCurrentUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -40,7 +43,7 @@ public class DoctorController : Controller
         {
             return userId;
         }
-        
+
         throw new InvalidOperationException("Couldn't get the ID of the current user.");
     }
 
@@ -52,9 +55,9 @@ public class DoctorController : Controller
             _logger.LogWarning("User is not logged in.");
             return NotFound();
         }
-        
+
         await using var context = await _dbContextFactory.CreateDbContextAsync();
-        
+
         var doctor = await context.Doctors
             .Where(d => d.UserId == userId)
             .FirstOrDefaultAsync();
@@ -63,7 +66,7 @@ public class DoctorController : Controller
             _logger.LogWarning("Doctor is not logged in.");
             return NotFound();
         }
-        
+
         var appointmentSlots = await context.AppointmentSlots
             .Include(a => a.Appointment)
             .ThenInclude(ap => ap.Patient)
@@ -71,15 +74,15 @@ public class DoctorController : Controller
             .ToListAsync();
         return View(appointmentSlots);
     }
-    
+
     private async Task<IEnumerable<SelectListItem>> GetMedicationsSelectListAsync()
     {
         await using var context = await _dbContextFactory.CreateDbContextAsync();
-        
+
         var medications = await context.Medications
             .OrderBy(x => x.Name)
             .ToListAsync();
-    
+
         return medications.Select(s => new SelectListItem
         {
             Value = s.MedicationId.ToString(),
@@ -97,24 +100,24 @@ public class DoctorController : Controller
         }
 
         var medications = await GetMedicationsSelectListAsync();
-    
+
         var model = new AddMedicalRecordsViewModel
         {
             MedicationsList = medications,
             AppointmentId = id
         };
-        
+
         Console.Out.WriteLine($"in get : {model.AppointmentId}");
-        
+
         return View(model);
     }
-    
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddMedicalRecords(AddMedicalRecordsViewModel model)
     {
         await using var context = await _dbContextFactory.CreateDbContextAsync();
-        
+
         if (!ModelState.IsValid)
         {
             var medicationsList = await context.Medications.ToListAsync();
@@ -135,7 +138,7 @@ public class DoctorController : Controller
                 model.MedicationID,
                 model.NameMedication,
                 model.DescriptionMedication);
-            
+
             return RedirectToAction("DoctorPage", "Doctor");
         }
         catch (Exception ex)
@@ -144,8 +147,10 @@ public class DoctorController : Controller
             {
                 Console.Out.WriteLine($"Internal error: {ex.InnerException.Message}");
             }
+
             ModelState.AddModelError("", "An unknown error has occurred. Please try again later.");
         }
+
         return View(model);
     }
 
@@ -157,7 +162,7 @@ public class DoctorController : Controller
             _logger.LogWarning("Invalid patient ID in show medical records.");
             return NotFound();
         }
-        
+
         await using var context = await _dbContextFactory.CreateDbContextAsync();
 
         var patient = await context.Patients
@@ -194,5 +199,100 @@ public class DoctorController : Controller
         };
 
         return View(viewModel);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> CreatePdfFileWithMedicalRecords(long id)
+    {
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+
+        Console.Out.WriteLine($"in get : {id}");
+        
+        var patient = await context.Patients
+            .AsNoTracking()
+            .Include(p => p.Appointments)
+            .ThenInclude(appt => appt.AppointmentSlot)
+            .ThenInclude(slot => slot.Doctor)
+            .Include(p => p.Appointments)
+            .ThenInclude(appt => appt.MedicalRecords)
+            .ThenInclude(mr => mr.MedicalRecordMedications)
+            .ThenInclude(mrm => mrm.Medication)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (patient == null)
+        {
+            _logger.LogWarning($"Patient with ID {id} not found.");
+            return NotFound();
+        }
+
+        var appointments = patient.Appointments?.ToList();
+        if (appointments == null || !appointments.Any())
+        {
+            _logger.LogWarning($"No appointments found for patient with ID {id}.");
+            return NotFound();
+        }
+
+        var medicalRecordsWithDoctors = appointments
+            .Select(appt => new
+            {
+                Appointment = appt,
+                Doctor = appt.AppointmentSlot.Doctor,
+                Clinic = appt.AppointmentSlot.Doctor?.Clinic,
+                Specialty = appt.AppointmentSlot.Doctor?.Specialty
+            })
+            .Where(x => x.Doctor != null) 
+            .SelectMany(x => x.Appointment.MedicalRecords.Select(mr => new MedicalRecordWithDoctor
+            {
+                medicalRecord = mr,
+                doctor = x.Doctor,
+                clinic = x.Clinic,
+                specialty = x.Specialty
+            }))
+            .ToList();
+
+        if (!medicalRecordsWithDoctors.Any())
+        {
+            _logger.LogWarning($"Not medical record with ID {id}.");
+            return NotFound();
+        }
+
+        foreach (var mrwd in medicalRecordsWithDoctors)
+        {
+            Console.Out.WriteLine($"ID medical record: {mrwd.medicalRecord.Id}, Doctor ID: {mrwd.doctor.ID}");
+        }
+
+        var fileName = $"MedicalRecords_{patient.FamilyName}_{patient.FirstName}.pdf";
+        var backupFolder = _configuration["PdfFileConfig:PdfFolderPath"];
+        if (!Directory.Exists(backupFolder))
+        {
+            Directory.CreateDirectory(backupFolder);
+        }
+        
+        var fullPath = Path.Combine(backupFolder, fileName);
+
+        var pdfData = new PdfData
+        {
+            FullPath = fullPath,
+            Patient = patient,
+            medicalRecordWithDoctor = medicalRecordsWithDoctors
+        };
+
+        try
+        {
+            await SavePdfFile.CreatePdfFileWithMedicalRecords(pdfData);
+        }
+        catch (IOException ex) 
+        {
+            _logger.LogError($"PdfException occurred: {ex.Message}");
+            return StatusCode(500, "An error occurred while generating the PDF.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Unexpected exception occurred: {ex.Message}");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
+
+        var fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
+        return File(fileBytes, "application/pdf", $"MedicalRecords_{id}.pdf");
     }
 }
