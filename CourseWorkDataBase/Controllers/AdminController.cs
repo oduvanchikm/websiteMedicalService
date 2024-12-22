@@ -348,7 +348,7 @@ public class AdminController : Controller
             return NotFound(new { message = "Doctor not found." });
         }
     
-        using (var transaction = context.Database.BeginTransaction())
+        await using (var transaction = await context.Database.BeginTransactionAsync())
         {
             try
             {

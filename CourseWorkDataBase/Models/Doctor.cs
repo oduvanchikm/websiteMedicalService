@@ -14,7 +14,7 @@ public class Doctor
     public Specialty Specialty { get; set; }
     public long SpecialtyID { get; set; }
     
-    public User User { get; set; }
+    public User? User { get; set; }
     public long UserId { get; set; }
     
     public Clinic Clinic { get; set; }
