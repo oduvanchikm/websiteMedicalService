@@ -1,326 +1,347 @@
--- -- GET SPECIALTY
-CREATE OR REPLACE FUNCTION GetDoctorsBySpecialty(p_SpecialtyId BIGINT)
-    RETURNS TABLE
-            (
-                ID            BIGINT,
-                FirstName     TEXT,
-                FamilyName    TEXT,
-                SpecialtyId   BIGINT,
-                NameSpecialty TEXT
-            )
-AS
+create table clients
+(
+    clientId    int primary key,
+    name        varchar(20) not null,
+    contactInfo varchar(30) not null
+);
+
+create table services
+(
+    serviceId   int primary key,
+    serviceName varchar(20) not null,
+    price       money
+);
+
+create table statusesForOrder
+(
+    statusId   int primary key,
+    statusName varchar(20)
+);
+
+create table orders
+(
+    orderId   int primary key,
+    clientId  int,
+    orderDate timestamp not null,
+    statusId  int,
+    foreign key (clientId) references clients (clientId),
+    foreign key (statusId) references statusesForOrder (statusId)
+);
+
+create table statusesForSlots
+(
+    statusId   int primary key,
+    statusName varchar(20) not null
+);
+
+create table timeSlots
+(
+    slotId    int primary key,
+    startTime timestamp not null,
+    endTime   timestamp not null,
+    statusId  int,
+    foreign key (statusId) references statusesForSlots (statusId)
+);
+
+create table appointments
+(
+    appointmentId serial primary key,
+    clientId      int,
+    serviceId     int,
+    slotId        int,
+    partId        int,
+    foreign key (clientId) references clients (clientId),
+    foreign key (serviceId) references services (serviceId),
+    foreign key (slotId) references timeSlots (slotId),
+    foreign key (partId) references parts (partId)
+);
+
+create table operationName
+(
+    operationId   serial primary key,
+    operationName varchar(20)
+);
+
+create table parts
+(
+    partId          serial primary key,
+    partName        text not null,
+    price           money,
+    quantityInStock int
+);
+
+create table logs
+(
+    logId       serial primary key,
+    operationId int,
+    tableName   varchar(20),
+    time        timestamp,
+    foreign key (operationId) references operationName (operationId)
+);
+
+insert into operationName(operationName)
+values ('insert'),
+       ('update'),
+       ('delete');
+
+create or replace function logOrderChangeTriggerFunction()
+    returns trigger as
 $$
-BEGIN
-    RETURN QUERY
-        SELECT d."ID", d."FirstName", d."FamilyName", d."SpecialtyID", s."NameSpecialty"
-        FROM "Doctors" d
-                 INNER JOIN
-             "Specialties" s
-             ON d."SpecialtyID" = s."Id"
-        WHERE (p_SpecialtyId = 0 OR d."SpecialtyID" = p_SpecialtyId);
-END;
-$$ LANGUAGE plpgsql;
+begin
+    if tg_op = 'INSERT' then
+        insert into logs(operationId, tableName, time)
+        values (1, 'Orders', now());
+    elsif tg_op = 'UPDATE' then
+        insert into logs(operationId, tableName, time)
+        values (2, 'Orders', now());
+    elsif tg_op = 'DELETE' then
+        insert into logs(operationId, tableName, time)
+        values (3, 'Orders', now());
 
-SELECT *
-FROM GetDoctorsBySpecialty(0);
-SELECT *
-FROM GetDoctorsBySpecialty(1);
---
+    end if;
+    return null;
+end;
+$$ language plpgsql;
 
--- BOOK APPOINTMENT
-CREATE OR REPLACE PROCEDURE BookAppointment(
-    p_SlotId BIGINT,
-    p_PatientId BIGINT
-)
-    LANGUAGE plpgsql
-AS
+create trigger orderChangeTrigger
+    after insert or update or delete
+    on orders
+    for each row
+execute function logOrderChangeTriggerFunction();
+
+create or replace function logUpdateResultPart()
+    returns trigger as
 $$
-BEGIN
-    IF NOT EXISTS(SELECT 1
-                  FROM "AppointmentSlots"
-                  WHERE "Id" = p_SlotId
-                    AND NOT "IsBooked"
-                    AND "StartTime" >= CURRENT_DATE) THEN
-        RAISE EXCEPTION 'Slot is already booked or does not exist';
-    END IF;
+begin
+    update parts
+    set quantityInStock = quantityInStock - 1
+    where partId = new.partId;
+    return new;
+end;
+$$ language plpgsql;
 
-    UPDATE "AppointmentSlots"
-    SET "IsBooked" = TRUE
-    WHERE "Id" = p_SlotId;
+create trigger updatePartResult
+    after insert
+    on appointments
+    for each row
+execute function logUpdateResultPart();
 
-    INSERT INTO "Appointments" ("PatientId", "AppointmentSlotId", "Date", "StatusId")
-    VALUES (p_PatientId, p_SlotId, NOW(), 1);
+insert into clients (clientId, name, contactInfo)
+values (1, 'Alice', 'alice@example.com'),
+       (2, 'Bob', 'bob@example.com'),
+       (3, 'Mary', 'mary@example.com'),
+       (4, 'Tom', 'tom@example.com');
 
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE EXCEPTION 'An error occurred during booking: %', SQLERRM;
-END;
-$$;
---
+insert into services (serviceId, serviceName, price)
+values (1, 'Oil Change', 29.99),
+       (2, 'Tire Rotation', 49.99),
+       (3, 'Brake Service', 99.99),
+       (4, 'Alignment', 129.99),
+       (5, 'Battery Replacement', 89.99);
 
--- GET MEDICAL RECORDS IN DOCTOR PAGE
-DROP FUNCTION IF EXISTS get_patient_medical_records(BIGINT);
--- не работает естестевенно 
-CREATE OR REPLACE FUNCTION get_patient_medical_records(p_patient_id BIGINT)
-    RETURNS TABLE
-            (
-                patient_id                 BIGINT,
-                first_name                 TEXT,
-                family_name                TEXT,
-                appointment_id             BIGINT,
-                medical_record_id          BIGINT,
-                medical_record_description TEXT,
-                diagnosis                  TEXT,
-                medication_id              BIGINT,
-                medication_name            TEXT,
-                medication_description     TEXT
-            )
-AS
+insert into statusesForOrder (statusId, statusName)
+values (1, 'Pending'),
+       (2, 'Completed');
+
+insert into orders (orderId, clientId, orderDate, statusId)
+values (1, 1, now(), 1),
+       (2, 2, now(), 2),
+       (3, 3, now() - interval '1 day', 1),
+       (4, 4, now() - interval '2 days', 2),
+       (5, 1, now() - interval '5 days', 2),
+       (6, 2, now(), 1);
+
+insert into orders (orderId, clientId, orderDate, statusId)
+values (7, 4, now() - interval '6 days', 2),
+       (8, 1, now() - interval '4 days', 2),
+       (9, 2, now(), 1);
+
+insert into orders (orderId, clientId, orderDate, statusId)
+values (10, 4, now() - interval '7 days', 2),
+       (11, 1, now() - interval '8 days', 2),
+       (12, 4, now(), 1);
+
+delete
+from orders
+where orderId = 12;
+
+insert into orders (orderId, clientId, orderDate, statusId)
+values (12, 4, now(), 1);
+
+select *
+from logs;
+
+select *
+from orders;
+
+insert into statusesForSlots (statusId, statusName)
+values (1, 'Available'),
+       (2, 'Booked');
+
+insert into timeSlots (slotId, startTime, endTime, statusId)
+values (1, now(), now() + interval '1 hour', 1),
+       (2, now() + interval '2 hours', now() + interval '3 hours', 2),
+       (3, now() + interval '4 hours', now() + interval '5 hours', 1),
+       (4, now() + interval '6 hours', now() + interval '7 hours', 2),
+       (5, now() + interval '8 hours', now() + interval '9 hours', 1),
+       (6, now() + interval '10 hours', now() + interval '11 hours', 2);
+
+insert into parts (partName, price, quantityInStock)
+values ('Oil Filter', 15.00, 100),
+       ('Tire', 80.00, 50),
+       ('Brake Pads', 45.00, 30),
+       ('Alignment Kit', 120.00, 25),
+       ('Car Battery', 100.00, 40),
+       ('Spark Plug', 10.00, 200),
+       ('Air Filter', 20.00, 75);
+
+select *
+from logs;
+
+insert into appointments (clientId, serviceId, slotId, partId)
+values (4, 1, 6, 2);
+
+select *
+from parts;
+
+select *
+from appointments;
+
+--Функция записи на обслуживание — проверяет доступное время и записывает клиента.
+
+create or replace function CheckTimeAndBook(pClientId int, pServiceId int, pSlotId int, pPartId int)
+    returns boolean as
 $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM "Patients" WHERE "Id" = p_patient_id) THEN
-        RAISE EXCEPTION 'Patient with ID % not found.', p_patient_id;
-    END IF;
+declare
+    slotAvailableOrNot int;
+begin
+    select statusId
+    into slotAvailableOrNot
+    from timeSlots
+    where slotId = pSlotId;
 
-    RETURN QUERY
-        SELECT p."Id"                 AS patient_id,
-               p."FirstName"::TEXT    AS first_name,
-               p."FamilyName"::TEXT   AS family_name,
-               a."Id"                 AS appointment_id,
-               mr."Id"                AS medical_record_id,
-               mr."Description"::TEXT AS medical_record_description,
-               mr."Diagnosis"::TEXT   AS diagnosis,
-               mrm."MedicationId"     AS medication_id,
-               m."Name"::TEXT         AS medication_name,
-               m."Description"::TEXT  AS medication_description
-        FROM "Patients" p
-                 INNER JOIN
-             "Appointments" a ON a."PatientId" = p."Id"
-                 INNER JOIN
-             "MedicalRecords" mr ON mr."Id" = a."Id"
-                 LEFT JOIN
-             "MedicalRecordMedications" mrm ON mrm."MedicalRecordId" = mr."Id"
-                 LEFT JOIN
-             "Medications" m ON m."MedicationId" = mrm."MedicationId"
-        WHERE p."Id" = p_patient_id
-        ORDER BY a."Id", mr."Id", m."MedicationId";
-END;
-$$ LANGUAGE plpgsql;
+    if slotAvailableOrNot = 1 then
+        insert into appointments(clientId, serviceId, slotId, partId)
+        values (pClientId, pServiceId, pSlotId, pPartId);
 
-SELECT *
-FROM get_patient_medical_records(2::BIGINT);
---
+        update timeSlots
+        set statusId = 2
+        where slotId = pSlotId;
 
-SELECT version();
+        return true;
+    else
+        return false;
+    end if;
 
--- триггеры :)
--- TRIGGER USER TABLE
-CREATE OR REPLACE FUNCTION UserTriggerFunction()
-    RETURNS TRIGGER AS
+end;
+$$ language plpgsql;
+
+select CheckTimeAndBook(2, 1, 5, 1);
+
+select *
+from appointments;
+
+--Функция расчета стоимости ремонта — принимает список услуг и деталей, возвращает итоговую стоимость.
+
+create or replace function CalculateRepairCost(serviceArray int[], partArray int[])
+    returns money as
 $$
-DECLARE
-    UserId        BIGINT;
-    HistoryLogId  BIGINT;
-    TableName     TEXT;
-    OperationType TEXT;
+declare
+    totalCost   money := 0;
+    serviceCost money;
+    partCost    money;
 
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        UserId := NEW."Id";
-        TableName := TG_TABLE_NAME;
-        OperationType := 'INSERT';
+begin
+    select sum(price)
+    into serviceCost
+    from services
+    where serviceId = any (serviceArray);
 
-        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
-        VALUES (TableName,
-                OperationType,
-                NOW())
-        RETURNING "Id" INTO HistoryLogId;
+    select sum(price)
+    into partCost
+    from parts
+    where partId = any (partArray);
 
-        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
-        VALUES (HistoryLogId, UserId);
+    totalCost := serviceCost + partCost;
 
-        RETURN NEW;
+    return totalCost;
 
-    ELSIF TG_OP = 'UPDATE' THEN
+end;
+$$ language plpgsql;
 
-        UserId := NEW."Id";
-        TableName := TG_TABLE_NAME;
-        OperationType := 'UPDATE';
+select CalculateRepairCost(array [1, 2], array [3, 4, 5]);
 
-        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
-        VALUES (TableName,
-                OperationType,
-                NOW())
-        RETURNING "Id" INTO HistoryLogId;
+--Создать представление, которое будет содержать топ-10 заказываемых услуг
 
-        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
-        VALUES (HistoryLogId, UserId);
-
-        RETURN NEW;
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER UserTrigger
-    AFTER INSERT OR UPDATE
-    ON "Users"
-    FOR EACH ROW
-EXECUTE PROCEDURE UserTriggerFunction();
-
-SELECT *
-FROM "HistoryLogs";
-SELECT *
-FROM "UsersHistoryLogs";
---
-
-DROP TRIGGER IF EXISTS UserTrigger ON "Users";
-
--- TRIGGER PATIENT TALE
-CREATE OR REPLACE FUNCTION PatientTriggerFunction()
-    RETURNS TRIGGER AS
-$$
-DECLARE
-    UserId        BIGINT;
-    HistoryLogId  BIGINT;
-    TableName     TEXT;
-    OperationType TEXT;
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        UserId := NEW."UserId";
-        TableName := TG_TABLE_NAME;
-        OperationType := 'INSERT';
-
-        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
-        VALUES (TableName,
-                OperationType,
-                NOW())
-        RETURNING "Id" INTO HistoryLogId;
-
-        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
-        VALUES (HistoryLogId, UserId);
-        RETURN NEW;
-
-    ELSIF TG_OP = 'UPDATE' THEN
-        UserId := NEW."UserId";
-        TableName := TG_TABLE_NAME;
-        OperationType := 'UPDATE';
-
-        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
-        VALUES (TableName,
-                OperationType,
-                NOW())
-        RETURNING "Id" INTO HistoryLogId;
-
-        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
-        VALUES (HistoryLogId, UserId);
-        RETURN NEW;
-
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER PatientTrigger
-    AFTER INSERT OR UPDATE
-    ON "Patients"
-    FOR EACH ROW
-EXECUTE PROCEDURE PatientTriggerFunction();
-
-SELECT *
-FROM "HistoryLogs";
-SELECT *
-FROM "UsersHistoryLogs";
---
-
-
-DROP TRIGGER IF EXISTS PatientTrigger ON "Patients";
-
--- TRIGGER DOCTORS TABLE
-CREATE OR REPLACE FUNCTION DoctorClinicTriggerFunction()
-    RETURNS TRIGGER AS
-$$
-DECLARE
-    UserId        BIGINT;
-    HistoryLogId  BIGINT;
-    DoctorId      BIGINT DEFAULT NULL;
-    ClinicId      BIGINT DEFAULT NULL;
-    TableName     TEXT;
-    OperationType TEXT;
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        UserId := NEW."UserId";
-        DoctorId := NEW."ID";
-        TableName := TG_TABLE_NAME;
-        OperationType := 'INSERT';
-
-        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
-        VALUES (TableName,
-                OperationType,
-                NOW())
-        RETURNING "Id" INTO HistoryLogId;
-
-        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
-        VALUES (HistoryLogId, UserId);
-        RETURN NEW;
-
-    ELSIF TG_OP = 'UPDATE' THEN
-        UserId := NEW."UserId";
-        TableName := TG_TABLE_NAME;
-        OperationType := 'UPDATE';
-
-        INSERT INTO "HistoryLogs" ("TableName", "OperationType", "ChangeTime")
-        VALUES (TableName,
-                OperationType,
-                NOW())
-        RETURNING "Id" INTO HistoryLogId;
-
-        INSERT INTO "UsersHistoryLogs" ("HistoryLogsId", "UserId")
-        VALUES (HistoryLogId, UserId);
-        RETURN NEW;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER DoctorTrigger
-    AFTER INSERT OR UPDATE
-    ON "Doctors"
-    FOR EACH ROW
-EXECUTE PROCEDURE DoctorClinicTriggerFunction();
-
-SELECT *
-FROM "HistoryLogs";
-SELECT *
-FROM "UsersHistoryLogs";
-
-DROP TRIGGER IF EXISTS DoctorTrigger ON "Doctors";
+create view popularServices as
+select services.serviceId,
+       services.serviceName,
+       count(appointments.appointmentId)
+from services
+         join
+     appointments on services.serviceId = appointments.serviceId
+group by services.serviceId, services.serviceName
+order by count(appointments.appointmentId) desc
+limit 10;
 
 select *
-from "Users";
+from popularServices;
 
-SELECT "UserId" AS userId
-FROM "Doctors"
-WHERE "ID" = (SELECT "ID"
-              FROM "Doctors"
-              WHERE "ClinicId" = 3);
+--Создать представления для администратора
+
+create view adminView as
+select clients.clientId,
+       clients.name,
+       clients.contactInfo,
+       services.serviceName,
+       orders.orderDate,
+       statusesForOrder.statusName,
+       timeSlots.startTime,
+       timeSlots.endTime
+from clients
+         join
+     appointments on clients.clientId = appointments.clientId
+         join
+     orders on clients.clientId = orders.clientId
+         join
+     statusesForOrder on orders.statusId = statusesForOrder.statusId
+         join
+     services on appointments.serviceId = services.serviceId
+         join
+     timeSlots on appointments.slotId = timeSlots.slotId;
 
 select *
-from "Clinics";
+from adminView;
+
+--Создать представления для покупателя
+
+create view customerView as
+select clients.name,
+       services.serviceName,
+       orders.orderDate,
+       statusesForOrder.statusName
+from clients
+         join
+     orders on clients.clientId = orders.clientId
+         join
+     statusesForOrder on statusesForOrder.statusId = orders.statusId
+         join
+     appointments on clients.clientId = appointments.clientId
+         join
+     services on appointments.serviceId = services.serviceId;
 
 select *
-from "Doctors";
+from customerView;
 
-select *
-from "Users";
+--Создать представления для продавца
 
-select *
-from "UsersHistoryLogs";
+create view sellerView as
+select services.serviceName,
+       count(appointments.appointmentId),
+       sum(services.price)
+from services
+         join
+     appointments on services.serviceId = appointments.serviceId
+group by services.serviceId, services.serviceName;
 
-select *
-from "HistoryLogs";
-
-select *
-from "Roles";
-
--- INSERT INTO "Users" ("Id", "Email", "Password", "RoleId", "CreatedAt")
--- VALUES (1, 'admin@example.com', '$2a$11$o.sTnyjh8Mr9ArOWpr5Q..rsRPFHJ7EJ6pIeFUyVEfP2fe5b1riHm', 1,
---         '2024-12-14 17:50:33.767814 +00:00');
+select * from sellerView;
