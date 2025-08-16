@@ -324,3 +324,13 @@ from "Roles";
 -- INSERT INTO "Users" ("Id", "Email", "Password", "RoleId", "CreatedAt")
 -- VALUES (1, 'admin@example.com', '$2a$11$o.sTnyjh8Mr9ArOWpr5Q..rsRPFHJ7EJ6pIeFUyVEfP2fe5b1riHm', 1,
 --         '2024-12-14 17:50:33.767814 +00:00');
+
+
+SELECT * FROM "Users" WHERE "Users"."Id" = '1' OR "Users"."Email" = 'sonchik.galkina@gmail.com';
+
+
+SELECT * FROM "Users";
+
+SELECT * FROM "Users" WHERE 1=1;--’ and password=’RandomPass’;
+
+select * from "Doctors" where 1=1;

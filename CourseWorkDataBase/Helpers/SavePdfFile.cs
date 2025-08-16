@@ -1,16 +1,9 @@
 using System.Globalization;
-using CourseWorkDataBase.DAL;
-using CourseWorkDataBase.Models;
 using CourseWorkDataBase.ViewModels;
-using Microsoft.EntityFrameworkCore;
 using iText.IO.Font;
-using iText.Kernel.Exceptions;
 using iText.Kernel.Font;
 using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Draw;
-using iText.Layout;
 using iText.Layout.Element;
-using Microsoft.AspNetCore.Mvc;
 
 namespace CourseWorkDataBase.Helpers;
 

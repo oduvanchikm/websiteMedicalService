@@ -1,8 +1,5 @@
 using CourseWorkDataBase.DAL;
 using CourseWorkDataBase.Models;
-using CourseWorkDataBase.ViewModels;
-// using CourseWorkDataBase.Helpers;
-using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Services;

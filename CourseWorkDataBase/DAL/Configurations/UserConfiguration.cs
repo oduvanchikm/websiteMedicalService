@@ -55,6 +55,5 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
                 Doctor = null
             }
         );
-
     }
 }
