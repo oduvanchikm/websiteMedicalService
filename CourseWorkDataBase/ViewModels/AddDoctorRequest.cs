@@ -10,27 +10,24 @@ public class AddDoctorRequest
     [EmailAddress(ErrorMessage = "Некорректный формат Email")]
     public string email { get; set; }
 
-    [Required]
-    public string firstName { get; set; }
+    [Required] public string firstName { get; set; }
 
-    [Required]
-    public string familyName { get; set; }
-    
-    [Required]
-    public string personalNumber { get; set; }
- 
+    [Required] public string familyName { get; set; }
+
+    [Required] public string personalNumber { get; set; }
+
     public long? specialtyId { get; set; }
-    
+
     public string? specialtyName { get; set; }
-    
+
     public string? description { get; set; }
-    
+
     public IEnumerable<SelectListItem>? Specialties { get; set; }
-    
+
     public long? clinicId { get; set; }
-    
-    public string? clinicAddress { get; set; } 
-    public string? clinicPhoneNumber { get; set; } 
-    
+
+    public string? clinicAddress { get; set; }
+    public string? clinicPhoneNumber { get; set; }
+
     public IEnumerable<SelectListItem>? Clinics { get; set; }
 }

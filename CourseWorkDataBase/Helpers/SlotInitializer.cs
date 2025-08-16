@@ -2,22 +2,15 @@ using CourseWorkDataBase.Models;
 using CourseWorkDataBase.DAL;
 using Microsoft.EntityFrameworkCore;
 
-namespace CourseWorkDataBase.Services;
+namespace CourseWorkDataBase.Helpers;
 
-public class SlotInitializer
+public class SlotInitializer(IDbContextFactory<ApplicationDbContext> dbContextFactory, ILogger<SlotInitializer> logger)
 {
-    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
-    private readonly ILogger<SlotInitializer> _logger;
-
-    public SlotInitializer(IDbContextFactory<ApplicationDbContext> dbContextFactory, ILogger<SlotInitializer> logger)
-    {
-        _dbContextFactory = dbContextFactory;
-        _logger = logger;
-    }
+    private readonly ILogger<SlotInitializer> _logger = logger;
 
     public async Task InitializeSlotAsync()
     {
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
         
         var doctors = await context.Doctors
             .Include(d => d.AppointmentSlots)

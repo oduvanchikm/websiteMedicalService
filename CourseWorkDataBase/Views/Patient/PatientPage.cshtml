@@ -2,7 +2,7 @@
 @model PatientPageViewModel
 
 @{
-    ViewData["Title"] = "List of Doctors";
+ViewData["Title"] = "List of Doctors";
 }
 
 <!DOCTYPE html>
@@ -19,7 +19,7 @@
         }
 
         .container {
-            background-color: rgba(255, 255, 255, 0.95); 
+            background-color: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
             padding: 30px;
             box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
@@ -65,8 +65,8 @@
         .textright {
             position: absolute;
             top: 20px;
-            right: 20px; 
-            z-index: 100; 
+            right: 20px;
+            z-index: 100;
         }
 
         .textrightnew {
@@ -77,17 +77,17 @@
         }
 
         .btn-logout {
-            background-color: #7c4b96; 
-            color: white; 
+            background-color: #7c4b96;
+            color: white;
             border: none;
             border-radius: 50px;
-            padding: 10px 20px; 
+            padding: 10px 20px;
             font-size: 16px;
             transition: background-color 0.3s ease;
         }
 
         .btn-logout:hover {
-            background-color: #8c4b99; 
+            background-color: #8c4b99;
         }
 
     </style>
@@ -96,7 +96,7 @@
 <div class="textright">
     <form action="@Url.Action("Logout", "Authorization")" method="post" class="d-inline">
         @Html.AntiForgeryToken()
-        <button type="submit" class="btn btn-logout">Logout</button> 
+        <button type="submit" class="btn btn-logout">Logout</button>
     </form>
 </div>
 
@@ -119,7 +119,8 @@
                 <select id="specialtySelect" name="specialtyId" class="form-select">
                     @foreach (var specialty in Model.Specialties)
                     {
-                        <option value="@specialty.Value" @(specialty.Value == (Model.SelectedSpecialtyId?.ToString() ?? "0") ? "selected" : "")>@specialty.Text</option>
+                    <option value="@specialty.Value"
+                            @(specialty.Value == (Model.SelectedSpecialtyId?.ToString() ?? "0") ? "selected" : "")>@specialty.Text</option>
                     }
                 </select>
             </div>
@@ -145,23 +146,24 @@
         <tbody>
         @if (Model.Doctors != null && Model.Doctors.Any())
         {
-            foreach (var doctor in Model.Doctors)
-            {
-                <tr>
-                    <td>@doctor.FirstName</td>
-                    <td>@doctor.FamilyName</td>
-                    <td>@doctor.NameSpecialty</td>
-                    <td>
-                        <a href="@Url.Action("ViewDoctor", "Patient", new { doctorId = doctor.ID })" class="btn btn-info btn-sm">View</a>
-                    </td>
-                </tr>
-            }
+        foreach (var doctor in Model.Doctors)
+        {
+        <tr>
+            <td>@doctor.FirstName</td>
+            <td>@doctor.FamilyName</td>
+            <td>@doctor.NameSpecialty</td>
+            <td>
+                <a href="@Url.Action("ViewDoctor", "Patient", new { doctorId = doctor.ID })"
+                   class="btn btn-info btn-sm">View</a>
+            </td>
+        </tr>
+        }
         }
         else
         {
-            <tr>
-                <td colspan="4" class="text-center">Doctors have not been found.</td>
-            </tr>
+        <tr>
+            <td colspan="4" class="text-center">Doctors have not been found.</td>
+        </tr>
         }
         </tbody>
     </table>

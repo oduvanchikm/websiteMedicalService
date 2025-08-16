@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Restore Database";
+ViewData["Title"] = "Restore Database";
 }
 
 <!DOCTYPE html>
@@ -186,7 +186,7 @@
             success: function (data) {
                 var select = $('#backupFileSelect');
                 $.each(data, function (index, fileName) {
-                    select.append($('<option>', { value: fileName, text: fileName }));
+                    select.append($('<option>', {value: fileName, text: fileName}));
                 });
             },
             error: function (xhr) {
@@ -206,7 +206,7 @@
             $.ajax({
                 url: '@Url.Action("RestoreArchivedCopiesOfTheDatabase", "Admin")',
                 type: 'POST',
-                data: { backupFile: selectedFile },
+                data: {backupFile: selectedFile},
                 success: function (data) {
                     $('#statusMessage').html('<div class="alert alert-success">The database was successfully restored.</div>');
                     window.location.href = '@Url.Action("AdminMainPage", "Admin")';

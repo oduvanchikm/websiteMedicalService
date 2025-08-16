@@ -2,7 +2,7 @@
 @model IEnumerable<AppointmentSlot>
 
 @{
-    ViewData["Title"] = "Doctor's Personal Office";
+ViewData["Title"] = "Doctor's Personal Office";
 }
 
 <!DOCTYPE html>
@@ -45,6 +45,7 @@
             color: white;
             border: none;
         }
+
         .btn-purple:hover {
             background-color: #7c4b96;
         }
@@ -100,7 +101,7 @@
         .btn-logout:hover {
             background-color: #8c4b99;
         }
-        
+
     </style>
 </head>
 <body>
@@ -136,28 +137,31 @@
                 <tbody>
                 @if (Model != null)
                 {
-                    @foreach (var appointment in Model)
-                    {
-                        if (appointment?.Appointment?.Patient != null)
-                        {
-                            <tr>
-                                <td>@appointment.StartTime.ToString("g")</td>
-                                <td>@appointment.Appointment.Patient.FirstName @appointment.Appointment.Patient.FamilyName</td>
-                                <td>
-                                    <a class="btn btn-purple" href="@Url.Action("AddMedicalRecords", "Doctor", new { id = appointment.Appointment.Id })">Personal list</a>
-                                </td>
-                                <td>
-                                    <a class="btn btn-purple" href="@Url.Action("ShowMedicalRecords", "Doctor", new { id = appointment.Appointment.PatientId })">Information</a>
-                                </td>
-                            </tr>
-                        }
-                    }
+                @foreach (var appointment in Model)
+                {
+                if (appointment?.Appointment?.Patient != null)
+                {
+                <tr>
+                    <td>@appointment.StartTime.ToString("g")</td>
+                    <td>@appointment.Appointment.Patient.FirstName @appointment.Appointment.Patient.FamilyName</td>
+                    <td>
+                        <a class="btn btn-purple"
+                           href="@Url.Action("AddMedicalRecords", "Doctor", new { id = appointment.Appointment.Id })">Personal
+                            list</a>
+                    </td>
+                    <td>
+                        <a class="btn btn-purple"
+                           href="@Url.Action("ShowMedicalRecords", "Doctor", new { id = appointment.Appointment.PatientId })">Information</a>
+                    </td>
+                </tr>
+                }
+                }
                 }
                 else
                 {
-                    <tr>
-                        <td colspan="4" class="text-center">Doctors have not been found.</td>
-                    </tr>
+                <tr>
+                    <td colspan="4" class="text-center">Doctors have not been found.</td>
+                </tr>
                 }
                 </tbody>
             </table>

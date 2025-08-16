@@ -12,23 +12,13 @@ using Microsoft.EntityFrameworkCore;
 namespace CourseWorkDataBase.Controllers;
 
 [Authorize("DoctorPolicy")]
-public class DoctorController : Controller
+public class DoctorController(
+    IDbContextFactory<ApplicationDbContext> dbContextFactory,
+    ILogger<DoctorController> logger,
+    DoctorService doctorService,
+    IConfiguration configuration)
+    : Controller
 {
-    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
-    private readonly ILogger<DoctorController> _logger;
-    private readonly DoctorService _doctorService;
-    private readonly IConfiguration _configuration;
-
-    public DoctorController(IDbContextFactory<ApplicationDbContext> dbContextFactory,
-        ILogger<DoctorController> logger,
-        DoctorService doctorService, IConfiguration configuration)
-    {
-        _dbContextFactory = dbContextFactory;
-        _logger = logger;
-        _doctorService = doctorService;
-        _configuration = configuration;
-    }
-
     [HttpGet]
     public async Task<IActionResult> Logout()
     {
@@ -52,18 +42,18 @@ public class DoctorController : Controller
         var userId = GetCurrentUserId();
         if (userId == null)
         {
-            _logger.LogWarning("User is not logged in.");
+            logger.LogWarning("User is not logged in.");
             return NotFound();
         }
 
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
 
         var doctor = await context.Doctors
             .Where(d => d.UserId == userId)
             .FirstOrDefaultAsync();
         if (doctor == null)
         {
-            _logger.LogWarning("Doctor is not logged in.");
+            logger.LogWarning("Doctor is not logged in.");
             return NotFound();
         }
 
@@ -77,7 +67,7 @@ public class DoctorController : Controller
 
     private async Task<IEnumerable<SelectListItem>> GetMedicationsSelectListAsync()
     {
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
 
         var medications = await context.Medications
             .OrderBy(x => x.Name)
@@ -95,7 +85,7 @@ public class DoctorController : Controller
     {
         if (id <= 0)
         {
-            _logger.LogWarning("Invalid appointment ID.");
+            logger.LogWarning("Invalid appointment ID.");
             return NotFound();
         }
 
@@ -116,7 +106,7 @@ public class DoctorController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddMedicalRecords(AddMedicalRecordsViewModel model)
     {
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
 
         if (!ModelState.IsValid)
         {
@@ -131,7 +121,7 @@ public class DoctorController : Controller
 
         try
         {
-            var medicalRecords = await _doctorService.AddMedicalRecordsAsync(
+            var medicalRecords = await doctorService.AddMedicalRecordsAsync(
                 model.AppointmentId,
                 model.Description,
                 model.Diagnosis,
@@ -159,11 +149,11 @@ public class DoctorController : Controller
     {
         if (id <= 0)
         {
-            _logger.LogWarning("Invalid patient ID in show medical records.");
+            logger.LogWarning("Invalid patient ID in show medical records.");
             return NotFound();
         }
 
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
 
         var patient = await context.Patients
             .AsNoTracking()
@@ -175,7 +165,7 @@ public class DoctorController : Controller
 
         if (patient == null)
         {
-            _logger.LogWarning($"Patient with ID {id} not found.");
+            logger.LogWarning($"Patient with ID {id} not found.");
             return NotFound();
         }
 
@@ -204,7 +194,7 @@ public class DoctorController : Controller
     [HttpGet]
     public async Task<IActionResult>  CreatePdfFileWithMedicalRecordsDoctor(long id)
     {
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
 
         Console.Out.WriteLine($"in get : {id}");
         
@@ -212,7 +202,9 @@ public class DoctorController : Controller
             .AsNoTracking()
             .Include(p => p.Appointments)
             .ThenInclude(appt => appt.AppointmentSlot)
-            .ThenInclude(slot => slot.Doctor)
+            .ThenInclude(slot => slot.Doctor).ThenInclude(doctor => doctor.Clinic)
+            .Include(patient => patient.Appointments).ThenInclude(appointment => appointment.AppointmentSlot)
+            .ThenInclude(appointmentSlot => appointmentSlot.Doctor).ThenInclude(doctor => doctor.Specialty)
             .Include(p => p.Appointments)
             .ThenInclude(appt => appt.MedicalRecords)
             .ThenInclude(mr => mr.MedicalRecordMedications)
@@ -259,7 +251,7 @@ public class DoctorController : Controller
         }
 
         var fileName = $"MedicalRecords_{patient.FamilyName}_{patient.FirstName}_{id}.pdf";
-        var backupFolder = _configuration["PdfFileConfig:PdfFolderPath"];
+        var backupFolder = configuration["PdfFileConfig:PdfFolderPath"];
         if (!Directory.Exists(backupFolder))
         {
             Directory.CreateDirectory(backupFolder);

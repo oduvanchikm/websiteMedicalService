@@ -7,14 +7,9 @@ using iText.Layout.Element;
 
 namespace CourseWorkDataBase.Helpers;
 
-public class SavePdfFile
+public abstract class SavePdfFile(ILogger<SavePdfFile> logger)
 {
-    private readonly ILogger<SavePdfFile> _logger;
-
-    public SavePdfFile(ILogger<SavePdfFile> logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<SavePdfFile> _logger = logger;
 
     public static async Task CreatePdfFileWithMedicalRecords(PdfData pdfData)
     {
@@ -24,7 +19,7 @@ public class SavePdfFile
             Directory.CreateDirectory(directory);
         }
 
-        using (var writer = new PdfWriter(pdfData.FullPath))
+        await using (var writer = new PdfWriter(pdfData.FullPath))
         using (var pdf = new PdfDocument(writer))
         {
             using (var document = new iText.Layout.Document(pdf))

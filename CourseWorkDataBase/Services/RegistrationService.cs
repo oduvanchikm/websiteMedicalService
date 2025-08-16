@@ -3,20 +3,13 @@ using CourseWorkDataBase.Models;
 using CourseWorkDataBase.DAL;
 using Microsoft.EntityFrameworkCore;
 
-namespace CourseWorkDataBase.Data;
+namespace CourseWorkDataBase.Services;
 
-public class RegistrationService
+public class RegistrationService(IDbContextFactory<ApplicationDbContext> dbContextFactory)
 {
-    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
-
-    public RegistrationService(IDbContextFactory<ApplicationDbContext> dbContextFactory)
-    {
-        _dbContextFactory = dbContextFactory;
-    }
-
     public async Task<Patient> RegisterPage(string email, string password, string firstName, string familyName, string gender)
     {
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
         
         if (await context.Users.AnyAsync(u => u.Email == email && u.RoleId == 3))
         {

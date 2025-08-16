@@ -1,28 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using CourseWorkDataBase.Data;
 using CourseWorkDataBase.ViewModels;
 using System.Security.Claims;
+using CourseWorkDataBase.Services;
 
 namespace CourseWorkDataBase.Controllers;
 
-public class AuthorizationController : Controller
+public class AuthorizationController(AuthorizationService authService, ILogger<AuthorizationController> logger)
+    : Controller
 {
-    public enum UserRole
+    private enum UserRole
     {
         Admin = 1,
         Doctor = 2,
         Patient = 3
-    }
-    
-    private readonly AuthorizationService _authService;
-    private readonly ILogger<AuthorizationController> _logger;
-
-    public AuthorizationController(AuthorizationService authService, ILogger<AuthorizationController> logger)
-    {
-        _authService = authService;
-        _logger = logger;
     }
 
     [HttpGet]
@@ -44,7 +36,7 @@ public class AuthorizationController : Controller
             return RedirectToAction("AuthorizationPage", "Authorization");
         }
 
-        var user = await _authService.AuthenticateUser(request.Email, request.Password);
+        var user = await authService.AuthenticateUser(request.Email, request.Password);
         if (user == null)
         {
             Console.Out.WriteLine("Wrong email address or password");
@@ -83,7 +75,7 @@ public class AuthorizationController : Controller
             case UserRole.Patient:
                 return RedirectToAction("PatientPage", "Patient");
             default:
-                _logger.LogWarning("Unknown role {RoleId} for user with email {Email}", user.RoleId, user.Email);
+                logger.LogWarning("Unknown role {RoleId} for user with email {Email}", user.RoleId, user.Email);
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 return RedirectToAction("AuthorizationPage", "Authorization");
         }

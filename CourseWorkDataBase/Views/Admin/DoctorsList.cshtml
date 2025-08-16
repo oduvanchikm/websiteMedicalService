@@ -1,7 +1,7 @@
 @model IEnumerable<CourseWorkDataBase.Models.Doctor>
 
 @{
-    ViewData["Title"] = "List of Doctors";
+ViewData["Title"] = "List of Doctors";
 }
 
 <!DOCTYPE html>
@@ -16,7 +16,7 @@
             margin: 0;
             padding: 0;
         }
-    
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: url('https://milkeninstitute.org/sites/default/files/Batchlor-Elaine-hero_image-min.jpg') no-repeat center center fixed;
@@ -26,7 +26,7 @@
             justify-content: center;
             align-items: center;
         }
-    
+
         .table-container {
             width: 95%;
             max-width: 1000px;
@@ -35,42 +35,42 @@
             border-radius: 10px;
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
-    
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
             font-size: 1rem;
         }
-    
+
         th, td {
             padding: 15px;
             text-align: left;
         }
-    
+
         thead {
             background-color: #8b5fa3;
             color: #fff;
         }
-    
+
         tbody tr:nth-child(even) {
             background-color: #f3e7f5;
         }
-    
+
         tbody tr:hover {
             background-color: #e3d1e8;
         }
-    
+
         th {
             position: sticky;
             top: 0;
             z-index: 10;
         }
-    
+
         .text-center {
             text-align: center;
         }
-    
+
         .btn {
             display: inline-block;
             padding: 10px 20px;
@@ -133,7 +133,7 @@
         .btn-logout:hover {
             background-color: #8c4b99;
         }
-        
+
     </style>
 </head>
 <body>
@@ -159,27 +159,27 @@
         <tbody>
         @if (Model != null && Model.Any())
         {
-            foreach (var doctor in Model)
-            {
-                <tr>
-                    <td>@doctor.FirstName</td>
-                    <td>@doctor.FamilyName</td>
-                    <td>@(doctor.Specialty != null ? doctor.Specialty.NameSpecialty : "N/A")</td>
-                    <td>@(doctor.Clinic != null ? doctor.Clinic.Address : "N/A")</td>
-                    <td>@(doctor.Clinic != null ? doctor.Clinic.PhoneNumber : "N/A")</td>
-                    <td>
-                        <form action="@Url.Action("DeleteDoctor", "Admin", new { id = doctor.ID })" method="post">
-                            <button type="submit" class="btn">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            }
+        foreach (var doctor in Model)
+        {
+        <tr>
+            <td>@doctor.FirstName</td>
+            <td>@doctor.FamilyName</td>
+            <td>@(doctor.Specialty != null ? doctor.Specialty.NameSpecialty : "N/A")</td>
+            <td>@(doctor.Clinic != null ? doctor.Clinic.Address : "N/A")</td>
+            <td>@(doctor.Clinic != null ? doctor.Clinic.PhoneNumber : "N/A")</td>
+            <td>
+                <form action="@Url.Action("DeleteDoctor", "Admin", new { id = doctor.ID })" method="post">
+                    <button type="submit" class="btn">Delete</button>
+                </form>
+            </td>
+        </tr>
+        }
         }
         else
         {
-            <tr>
-                <td colspan="6" class="text-center">No doctors. </td>
-            </tr>
+        <tr>
+            <td colspan="6" class="text-center">No doctors.</td>
+        </tr>
         }
         </tbody>
     </table>

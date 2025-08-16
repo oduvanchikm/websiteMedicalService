@@ -1,18 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using CourseWorkDataBase.ViewModels;
-using CourseWorkDataBase.Data;
+using CourseWorkDataBase.Services;
 
 namespace CourseWorkDataBase.Controllers;
 
-public class RegisterController : Controller
+public class RegisterController(RegistrationService registrationService) : Controller
 {
-    private readonly RegistrationService _registrationService;
-
-    public RegisterController(RegistrationService registrationService)
-    {
-        _registrationService = registrationService;
-    }
-    
     [HttpGet]
     public IActionResult RegisterPage()
     {
@@ -30,7 +23,7 @@ public class RegisterController : Controller
         
         try
         {
-            var patient = await _registrationService.RegisterPage(
+            var patient = await registrationService.RegisterPage(
                 request.Email, 
                 request.Password, 
                 request.FirstName, 

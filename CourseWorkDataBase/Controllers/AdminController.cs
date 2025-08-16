@@ -12,23 +12,13 @@ using Microsoft.EntityFrameworkCore;
 namespace CourseWorkDataBase.Controllers;
 
 [Authorize ("AdminPolicy")]
-public class AdminController : Controller
+public class AdminController(
+    AdminService adminService,
+    IDbContextFactory<ApplicationDbContext> dbContextFactory,
+    ILogger<AdminController> logger,
+    IConfiguration configuration)
+    : Controller
 {
-    private readonly AdminService _adminService;
-    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
-    private readonly ILogger<AdminController> _logger;
-    private readonly IConfiguration _configuration;
-    
-    public AdminController(AdminService adminService, IDbContextFactory<ApplicationDbContext> dbContextFactory, 
-        ILogger<AdminController> logger, 
-        IConfiguration configuration)
-    {
-        _adminService = adminService;
-        _dbContextFactory = dbContextFactory;
-        _logger = logger;
-        _configuration = configuration;
-    }
-    
     [HttpGet]
     public IActionResult RestoreDataBase()
     {
@@ -38,13 +28,13 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> СreateArchivedCopiesOfTheDatabase()
     {
-        _logger.LogDebug("start СreateArchivedCopiesOfTheDatabase");
+        logger.LogDebug("start СreateArchivedCopiesOfTheDatabase");
         
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
         
         var databaseName = context.Database.GetDbConnection().Database;
         
-        var backupFolder = _configuration["BackupConfig:BackupFolderPath"];
+        var backupFolder = configuration["BackupConfig:BackupFolderPath"];
         var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
         
         var backupFileName = $"{databaseName}_{timestamp}.bak";
@@ -85,18 +75,18 @@ public class AdminController : Controller
 
             if (process.ExitCode == 0)
             {
-                _logger.LogDebug("The database backup has been successfully created.");
+                logger.LogDebug("The database backup has been successfully created.");
                 return RedirectToAction("AdminMainPage", "Admin");
             }
             else
             {
-                _logger.LogWarning("The database backup could not be created.");
+                logger.LogWarning("The database backup could not be created.");
                 throw new Exception($"Error when creating a backup: {error}");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "The database backup could not be created.");
+            logger.LogError(ex, "The database backup could not be created.");
             Environment.SetEnvironmentVariable("PGPASSWORD", null);
             throw new Exception($"Exception when creating a backup: {ex.Message}");
         }
@@ -105,8 +95,8 @@ public class AdminController : Controller
     [HttpGet]
     public IActionResult GetAvailableBackups()
     {
-        _logger.LogDebug("Retrieving a list of available database backups.");
-        var backupFolder = _configuration["BackupConfig:BackupFolderPath"];
+        logger.LogDebug("Retrieving a list of available database backups.");
+        var backupFolder = configuration["BackupConfig:BackupFolderPath"];
 
         var backupFiles = Directory.GetFiles(backupFolder)
             .Select(Path.GetFileName)
@@ -115,11 +105,11 @@ public class AdminController : Controller
 
         if (!backupFiles.Any())
         {
-            _logger.LogInformation("Backup folder '{BackupFolder}' no backup files.", backupFolder);
+            logger.LogInformation("Backup folder '{BackupFolder}' no backup files.", backupFolder);
             return Ok(new List<string>());
         }
 
-        _logger.LogInformation("Find {Count} backup files in folder '{BackupFolder}'.", backupFiles.Count,
+        logger.LogInformation("Find {Count} backup files in folder '{BackupFolder}'.", backupFiles.Count,
             backupFolder);
         return Ok(backupFiles);
     }
@@ -127,23 +117,23 @@ public class AdminController : Controller
     [HttpPost]
     public async Task<IActionResult> RestoreArchivedCopiesOfTheDatabase(string backupFile)
     {
-        _logger.LogDebug("Starting database restoration process.");
+        logger.LogDebug("Starting database restoration process.");
 
         if (string.IsNullOrWhiteSpace(backupFile))
         {
-            _logger.LogWarning("No backup file specified.");
+            logger.LogWarning("No backup file specified.");
             return BadRequest("No backup file specified.");
         }
         
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
         
-        var backupFolder = _configuration["BackupConfig:BackupFolderPath"];
+        var backupFolder = configuration["BackupConfig:BackupFolderPath"];
 
         string pathFile = Path.Combine(backupFolder, backupFile);
 
         if (!System.IO.File.Exists(pathFile))
         {
-            _logger.LogWarning($"Backup file '{pathFile}' does not exist.");
+            logger.LogWarning($"Backup file '{pathFile}' does not exist.");
             return NotFound("Backup file not found.");
         }
 
@@ -177,7 +167,7 @@ public class AdminController : Controller
                 }
             };
 
-            _logger.LogDebug($"debug: {pgRestorePath}");
+            logger.LogDebug($"debug: {pgRestorePath}");
             process.Start();
             string error = await process.StandardError.ReadToEndAsync();
 
@@ -187,23 +177,23 @@ public class AdminController : Controller
 
             if (process.ExitCode == 0)
             {
-                _logger.LogInformation("Database backup restored successfully.");
+                logger.LogInformation("Database backup restored successfully.");
                 System.IO.File.Delete(pathFile);
                 return RedirectToAction("AdminMainPage", "Admin");
             }
             else
             {
-                _logger.LogError($"Error restoring database backup. Exit code: {process.ExitCode}, Error: {error}");
+                logger.LogError($"Error restoring database backup. Exit code: {process.ExitCode}, Error: {error}");
                 throw new Exception($"Error restoring backup. Details: {error}");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Exception occurred during database restoration: {ex.Message}");
+            logger.LogError($"Exception occurred during database restoration: {ex.Message}");
             Environment.SetEnvironmentVariable("PGPASSWORD", null);
             if (System.IO.File.Exists(pathFile))
             {
-                _logger.LogWarning($"Deleting backup file at '{pathFile}' due to error.");
+                logger.LogWarning($"Deleting backup file at '{pathFile}' due to error.");
                 System.IO.File.Delete(pathFile);
             }
 
@@ -252,7 +242,7 @@ public class AdminController : Controller
 
     private async Task<IEnumerable<SelectListItem>> GetSpecialtiesSelectListAsync()
     {
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
         var specialties = await context.Specialties
             .OrderBy(s => s.NameSpecialty)
             .ToListAsync();
@@ -266,7 +256,7 @@ public class AdminController : Controller
 
     private async Task<IEnumerable<SelectListItem>> GetClinicsSelectListAsync()
     {
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
         var clinic = await context.Clinics
             .OrderBy(s => s.Address)
             .ToListAsync();
@@ -298,7 +288,7 @@ public class AdminController : Controller
 
         try
         {
-            var doctor = await _adminService.AddDoctorAsync(
+            var doctor = await adminService.AddDoctorAsync(
                 model.email,
                 model.familyName,
                 model.firstName,
@@ -334,9 +324,9 @@ public class AdminController : Controller
     [HttpPost]
     public async Task<IActionResult> DeleteDoctor(long id)
     {
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        _logger.LogInformation($"Initiating deletion process for Doctor with ID: {id}");
+        logger.LogInformation($"Initiating deletion process for Doctor with ID: {id}");
     
         var doctor = await context.Doctors
             .Include(d => d.User)
@@ -344,7 +334,7 @@ public class AdminController : Controller
             .FirstOrDefaultAsync(d => d.ID == id);
         if (doctor == null)
         {
-            _logger.LogWarning($"Doctor with ID {id} not found.");
+            logger.LogWarning($"Doctor with ID {id} not found.");
             return NotFound(new { message = "Doctor not found." });
         }
     
@@ -352,7 +342,7 @@ public class AdminController : Controller
         {
             try
             {
-                _logger.LogInformation($"Start transaction for Doctor with ID: {id}");
+                logger.LogInformation($"Start transaction for Doctor with ID: {id}");
 
                 var doctorId = doctor?.ID;
                 var userId = doctor?.User.Id;
@@ -391,11 +381,11 @@ public class AdminController : Controller
 
                     foreach (var appointment in appointments)
                     {
-                        _logger.LogInformation($"Deleted Appointment ID {appointment.Id} for Doctor ID {id}.");
+                        logger.LogInformation($"Deleted Appointment ID {appointment.Id} for Doctor ID {id}.");
                     }
                 }
                 
-                _logger.LogInformation($"transaction2 for Doctor with ID: {id}");
+                logger.LogInformation($"transaction2 for Doctor with ID: {id}");
                 
                 if (doctor.AppointmentSlots != null && doctor.AppointmentSlots.Any())
                 {
@@ -403,11 +393,11 @@ public class AdminController : Controller
                     
                     foreach (var AppointmentSlot in doctor.AppointmentSlots)
                     {
-                        _logger.LogInformation($"Deleted AppointmentSlot ID {AppointmentSlot.Id} for Doctor ID {id}.");
+                        logger.LogInformation($"Deleted AppointmentSlot ID {AppointmentSlot.Id} for Doctor ID {id}.");
                     }
                 }
                 
-                _logger.LogInformation($"transaction3 for Doctor with ID: {id}");
+                logger.LogInformation($"transaction3 for Doctor with ID: {id}");
     
                 var user = await context.Users
                     .Include(d => d.Doctor)
@@ -418,7 +408,7 @@ public class AdminController : Controller
                     return NotFound();
                 }
                 
-                _logger.LogInformation($"transaction4 for Doctor with ID: {id}");
+                logger.LogInformation($"transaction4 for Doctor with ID: {id}");
     
                 context.Doctors.Remove(doctor);
     
@@ -428,12 +418,12 @@ public class AdminController : Controller
                     Console.Out.WriteLine("Delete Doctor4");
                 }
                 
-                _logger.LogInformation($"transaction5 for Doctor with ID: {id}");
+                logger.LogInformation($"transaction5 for Doctor with ID: {id}");
                 
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 
-                _logger.LogInformation($"End transaction for Doctor with ID: {id}");
+                logger.LogInformation($"End transaction for Doctor with ID: {id}");
                 
                 return RedirectToAction("DoctorsList", "Admin");
             }
@@ -449,7 +439,7 @@ public class AdminController : Controller
     [HttpGet]
     public async Task<IActionResult> DoctorsList()
     {
-        var doctors = await _adminService.GetAllDoctorsAsync();
+        var doctors = await adminService.GetAllDoctorsAsync();
         return View(doctors);
     }
 }

@@ -1,7 +1,7 @@
 @model CourseWorkDataBase.ViewModels.AddMedicalRecordsViewModel
 
 @{
-    ViewData["Title"] = "Add New Med Report";
+ViewData["Title"] = "Add New Med Report";
 }
 
 <!DOCTYPE html>
@@ -17,7 +17,7 @@
             background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.0)), url('https://milkeninstitute.org/sites/default/files/Batchlor-Elaine-hero_image-min.jpg') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #7c4b96; 
+            color: #7c4b96;
         }
 
         .form-container {
@@ -71,11 +71,11 @@
         .btn-success:hover {
             background-color: #4cae4c;
         }
-        
+
         .btn {
-            margin-top: 15px; 
+            margin-top: 15px;
         }
-        
+
     </style>
 </head>
 <body>
@@ -103,14 +103,14 @@
                     <option value="">-- Select Medication --</option>
                     @if (Model.MedicationsList != null)
                     {
-                        @foreach (var specialty in Model.MedicationsList)
-                        {
-                            <option value="@specialty.Value">@specialty.Text</option>
-                        }
+                    @foreach (var specialty in Model.MedicationsList)
+                    {
+                    <option value="@specialty.Value">@specialty.Text</option>
+                    }
                     }
                     else
                     {
-                        <option disabled>No medications available</option>
+                    <option disabled>No medications available</option>
                     }
                 </select>
             </div>

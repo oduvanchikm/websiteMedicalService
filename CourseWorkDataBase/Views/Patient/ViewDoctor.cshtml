@@ -1,7 +1,7 @@
 @model CourseWorkDataBase.ViewModels.BookAppointmentViewModel
 
 @{
-    ViewData["Title"] = "Doctors Detail";
+ViewData["Title"] = "Doctors Detail";
 }
 
 <!DOCTYPE html>
@@ -21,12 +21,13 @@
             text-align: center;
             font-size: 1.25rem;
         }
+
         .btn-block {
             width: 100%;
         }
 
         .slot-card {
-            background-color:#7c4b96;
+            background-color: #7c4b96;
             color: white;
         }
 
@@ -36,7 +37,7 @@
         }
 
         .text-purple {
-            color: #7c4b96; 
+            color: #7c4b96;
         }
 
         .back-button {
@@ -65,67 +66,69 @@
 
     @if (Model.AvailableSlots != null && Model.AvailableSlots.Any())
     {
-        var slotsByDate = Model.AvailableSlots
-            .GroupBy(s => s.StartTime.Date)
-            .OrderBy(g => g.Key);
+    var slotsByDate = Model.AvailableSlots
+    .GroupBy(s => s.StartTime.Date)
+    .OrderBy(g => g.Key);
 
-        foreach (var dateGroup in slotsByDate)
-        {
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white card-header-purple-border">
-                    <strong>@dateGroup.Key.ToString("dddd, dd MMMM yyyy")</strong>
-                </div>
+    foreach (var dateGroup in slotsByDate)
+    {
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white card-header-purple-border">
+            <strong>@dateGroup.Key.ToString("dddd, dd MMMM yyyy")</strong>
+        </div>
 
-                <div class="card-body">
-                    @if (dateGroup.Any())
-                    {
-                        <div class="row">
-                            @foreach (var slot in dateGroup.OrderBy(s => s.StartTime))
-                            {
-                                <div class="col-md-3 mb-3">
-                                    <div class="card h-100 slot-card">
-                                        <div class="card h-100">
-                                            <div class="card-body d-flex flex-column justify-content-between">
-                                                <div>
-                                                    <p class="card-text">
-                                                        <strong>Time:</strong> @slot.StartTime.ToString("HH:mm") - @slot.EndTime.ToString("HH:mm")
-                                                    </p>
-                                                    @if (!string.IsNullOrEmpty(slot.Doctor.FirstName))
-                                                    {
-                                                        <p class="card-text">
-                                                            <strong>Doctor:</strong> @slot.Doctor.FirstName
-                                                        </p>
-                                                    }
-                                                </div>
-                                                <div>
-                                                    <form action="@Url.Action("BookAppointment", "Patient")" method="post" class="d-inline">
-                                                        <input type="hidden" name="slotId" value="@slot.Id"/>
-                                                        <button type="submit" class="btn btn-success btn-sm btn-block"
-                                                                onclick="return confirm('Are you sure you want to sign up for this slot?');">
-                                                            Sign Up
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+        <div class="card-body">
+            @if (dateGroup.Any())
+            {
+            <div class="row">
+                @foreach (var slot in dateGroup.OrderBy(s => s.StartTime))
+                {
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100 slot-card">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column justify-content-between">
+                                <div>
+                                    <p class="card-text">
+                                        <strong>Time:</strong> @slot.StartTime.ToString("HH:mm")
+                                        - @slot.EndTime.ToString("HH:mm")
+                                    </p>
+                                    @if (!string.IsNullOrEmpty(slot.Doctor.FirstName))
+                                    {
+                                    <p class="card-text">
+                                        <strong>Doctor:</strong> @slot.Doctor.FirstName
+                                    </p>
+                                    }
                                 </div>
-                            }
+                                <div>
+                                    <form action="@Url.Action("BookAppointment", "Patient")" method="post"
+                                          class="d-inline">
+                                        <input type="hidden" name="slotId" value="@slot.Id"/>
+                                        <button type="submit" class="btn btn-success btn-sm btn-block"
+                                                onclick="return confirm('Are you sure you want to sign up for this slot?');">
+                                            Sign Up
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                    }
-                    else
-                    {
-                        <p class="text-muted">No slots available on this date.</p>
-                    }
+                    </div>
                 </div>
+                }
             </div>
-        }
+            }
+            else
+            {
+            <p class="text-muted">No slots available on this date.</p>
+            }
+        </div>
+    </div>
+    }
     }
     else
     {
-        <div class="alert alert-info" role="alert">
-            There are no slots available at the moment.
-        </div>
+    <div class="alert alert-info" role="alert">
+        There are no slots available at the moment.
+    </div>
     }
 </div>
 

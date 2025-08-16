@@ -6,6 +6,6 @@ public class PdfData
 {
     public string FullPath { get; set; }
     public Patient Patient { get; set; }
-    
+
     public List<MedicalRecordWithDoctor> medicalRecordWithDoctor { get; set; }
 }

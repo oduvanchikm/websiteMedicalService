@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using CourseWorkDataBase.Data;
 using CourseWorkDataBase.DAL;
+using CourseWorkDataBase.Helpers;
 using CourseWorkDataBase.Services;
 
 var builder = WebApplication.CreateBuilder(args);

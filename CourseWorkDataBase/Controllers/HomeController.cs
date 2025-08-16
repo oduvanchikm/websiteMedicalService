@@ -4,14 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CourseWorkDataBase.Controllers;
 
-public class HomeController : Controller
+public class HomeController(IDbContextFactory<ApplicationDbContext> dbContextFactory) : Controller
 {
-    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
-    
-    public HomeController(IDbContextFactory<ApplicationDbContext> dbContextFactory)
-    {
-        _dbContextFactory = dbContextFactory;
-    }
+    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory = dbContextFactory;
 
     public IActionResult Index()
     {
