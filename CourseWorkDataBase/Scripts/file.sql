@@ -330,7 +330,3 @@ SELECT * FROM "Users" WHERE "Users"."Id" = '1' OR "Users"."Email" = 'sonchik.gal
 
 
 SELECT * FROM "Users";
-
-SELECT * FROM "Users" WHERE 1=1;--’ and password=’RandomPass’;
-
-select * from "Doctors" where 1=1;
